@@ -6,7 +6,7 @@
 <title>KURAYA 蔵屋 — 影片刮削与编目工具</title>
 <meta name="description" content="KURAYA 蔵屋 —— 影片刮削与编目工具：把散乱的影片文件整理成带封面与元数据的有序收藏，并生成可离线浏览的片库页面。macOS / Windows / Linux 一行命令安装，MIT 许可。">
 <link rel="canonical" href="index.html"><!-- 部署地址未定：上线前替换为绝对 URL -->
-<meta name="theme-color" content="#0e0e12">
+<meta name="theme-color" content="#08090b">
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="KURAYA 蔵屋">
@@ -18,8 +18,8 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="KURAYA 蔵屋 — 影片刮削与编目工具">
 <meta name="twitter:description" content="把散乱的影片文件整理成带封面和元数据的有序收藏，并生成可离线浏览的片库页面。">
-<!-- 内联 SVG favicon：朱印「蔵」 -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23a03e28'/%3E%3Ctext x='32' y='45' font-size='38' text-anchor='middle' fill='%23f2ece0' font-family='serif' font-weight='600'%3E%E8%94%B5%3C/text%3E%3C/svg%3E">
+<!-- 内联 SVG favicon：片库家纹（金圆环菱格，海鼠壁纹样，与 kuraya/web 一致） -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%230d0e11'/%3E%3Cg fill='none' stroke='%23c9a227' stroke-width='1.1' stroke-linejoin='miter'%3E%3Ccircle cx='12' cy='12' r='9.2' opacity='.45'/%3E%3Cpath d='M12 3.8L20.2 12 12 20.2 3.8 12z'/%3E%3Cpath d='M12 9.2l2.8 2.8-2.8 2.8-2.8-2.8z' fill='%23c9a227' stroke='none'/%3E%3C/g%3E%3C/svg%3E">
 <!-- 渐进增强开关：JS 可用才启用动效（无 JS 时内容完整可见） -->
 <script>if('IntersectionObserver' in window){document.documentElement.classList.add('js')}</script>
 <!-- 字体：Cormorant Garamond（拉丁展示）/ Noto Serif SC（细明朝，300/400/500）/ IBM Plex Mono（仅代码） -->
@@ -27,153 +27,217 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Noto+Serif+SC:wght@300;400;500&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
-/* ── 设计令牌：蔵屋四色 ─────────────────────────── */
+/* ── 设计令牌：与片库 kuraya/web/style.css 完全一致，金系 ── */
 :root{
   color-scheme:dark;
-  --ink:#0e0e12;        /* 墨黑 */
-  --paper:#eae5d9;      /* 宣纸白（正文对比度 ≈ 15:1） */
-  --dim:#9b958a;        /* 淡墨（次级文本 ≈ 6.4:1） */
-  --indigo:#7b8fb8;     /* 藍（编号/装饰，≥ 4.5:1） */
-  --vermi:#c9644a;      /* 朱（点缀，≈ 4.9:1） */
-  --vermi-deep:#a03e28; /* 朱印底色 */
-  --hair:rgba(234,229,217,.16);
-  --hair-soft:rgba(234,229,217,.07);
-  --code:rgba(234,229,217,.045);
+  --bg:#08090b;
+  --surface:#101216;
+  --surface-2:#16181d;
+  --line:rgba(255,255,255,.07);
+  --line-strong:rgba(255,255,255,.14);
+  --text:#f2f0ed;
+  --dim:#9c9a96;
+  --faint:#5f5d5a;
+  --gold:#c9a227;
+  --gold-soft:#e8cf8b;
   --font-serif:"Noto Serif SC","Songti SC","STSong","Noto Serif CJK SC",serif;
   --font-latin:"Cormorant Garamond","Noto Serif SC",serif;
   --font-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace,"Noto Serif SC",serif;
   --ease: cubic-bezier(.16,1,.3,1); /* 全局指数缓出 */
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{background:var(--ink);color:var(--paper);font-family:var(--font-serif);font-weight:300;font-size:16px;line-height:2.05;letter-spacing:.03em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-::selection{background:var(--vermi-deep);color:#f4efe4}
-a{color:inherit}
-:focus-visible{outline:1px solid var(--vermi);outline-offset:4px}
+html{scroll-behavior:smooth;scrollbar-color:#2a2c31 transparent}
+::-webkit-scrollbar{width:11px}
+::-webkit-scrollbar-thumb{background:#26282d;border-radius:8px;border:3px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+/* 墨的层次：纵向渐变打底 + 片库同款极细颗粒（feTurbulence，140px tile，opacity .028） */
+body{
+  background-color:var(--bg);
+  background-image:linear-gradient(180deg,#0a0c0f 0%,var(--bg) 45%,#060708 100%);
+  background-attachment:fixed;
+  color:var(--text);
+  font-family:var(--font-serif);
+  font-weight:300;font-size:16px;line-height:2.05;letter-spacing:.03em;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.028;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+main,footer{position:relative;z-index:1}
+::selection{background:rgba(201,162,39,.3)}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:1px solid var(--gold);outline-offset:4px}
 .mono,pre,code{font-family:var(--font-mono);font-weight:400}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 
 /* ── 无障碍：跳转链接 ───────────────────────────── */
 .skip{position:absolute;left:-9999px;top:0}
-.skip:focus{position:fixed;left:12px;top:12px;z-index:100;background:var(--paper);color:var(--ink);padding:10px 20px;font-size:13px;letter-spacing:.1em}
+.skip:focus{position:fixed;left:12px;top:12px;z-index:100;background:var(--gold);color:#17150e;padding:10px 20px;font-size:13px;letter-spacing:.1em}
 
-/* ── 檐 · 页眉 ─────────────────────────────────── */
-.mast{position:sticky;top:0;z-index:50;background:var(--ink);border-bottom:1px solid var(--hair-soft)}
-.mast-in{max-width:920px;margin:0 auto;padding:14px 24px;display:flex;align-items:baseline;justify-content:space-between;gap:20px}
-.brand{font-family:var(--font-latin);font-size:14px;font-weight:400;letter-spacing:.38em}
+/* ── 檐 · 页眉（家纹 + 词标；链接无下划线，hover 金色） ── */
+.mast{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--line)}
+.mast-in{max-width:920px;margin:0 auto;padding:13px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--font-latin);font-size:14px;font-weight:400;letter-spacing:.38em;transition:color .3s}
+.brand:hover{color:var(--gold-soft)}
+.brand-mark{display:flex;color:var(--gold)}
+.brand-mark svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.1;stroke-linejoin:miter}
+.brand-mark circle{opacity:.45}
+.brand-mark .mark-core{fill:currentColor;stroke:none}
 .mast nav{display:flex;gap:22px;flex-wrap:wrap}
-.mast nav a{font-size:12.5px;color:var(--dim);letter-spacing:.16em;transition:color .3s}
-.mast nav a:hover{color:var(--paper)}
-.mast .ver{font-family:var(--font-latin);font-size:12px;color:var(--dim);letter-spacing:.2em}
+.mast nav a{position:relative;font-size:12.5px;color:var(--dim);letter-spacing:.16em;transition:color .3s}
+.mast nav a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:1px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease)}
+.mast nav a:hover{color:var(--gold-soft)}
+.mast nav a:hover::after{transform:scaleX(1)}
+.mast .ver{font-family:var(--font-latin);font-size:12px;color:var(--faint);letter-spacing:.2em}
 @media(max-width:760px){.mast nav{display:none}}
 
 /* ── 门面 · Hero（含安装 tab，须整屏容纳） ──────── */
 .hero{position:relative;max-width:920px;margin:0 auto;padding:64px 24px 72px;min-height:calc(100vh - 49px);display:flex;align-items:center}
-.watermark{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);font-size:clamp(300px,46vw,600px);line-height:1;color:rgba(234,229,217,.04);font-weight:900;pointer-events:none;user-select:none;z-index:0}
+.watermark{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);font-size:clamp(300px,46vw,600px);line-height:1;color:rgba(242,240,237,.04);font-weight:900;pointer-events:none;user-select:none;z-index:0}
 .hero-in{position:relative;z-index:1}
-/* 落款排：朱印 + KURAYA 词标 + 蔵屋 */
+/* 落款排：金印 + KURAYA 词标 + 蔵屋 */
 .hero-top{display:flex;align-items:center;gap:22px}
-.seal{width:42px;height:42px;background:var(--vermi-deep);color:#f2ece0;writing-mode:vertical-rl;font-size:14px;font-weight:500;letter-spacing:.3em;display:grid;place-items:center;line-height:1;flex:none}
+.seal{width:42px;height:42px;background:var(--gold);color:#17150e;writing-mode:vertical-rl;font-size:14px;font-weight:500;letter-spacing:.3em;display:grid;place-items:center;line-height:1;flex:none}
 .hero-title{font-weight:300}
 .hero-title .en{display:block;font-family:var(--font-latin);font-weight:300;font-size:clamp(16px,2vw,22px);letter-spacing:.56em;margin-left:.56em}
 .hero-title .ja{display:block;font-size:clamp(62px,9.5vw,108px);line-height:1.1;font-weight:300;letter-spacing:.1em;margin-top:6px}
 .hero-title .ja .ch{display:inline-block}
-.tate{position:absolute;right:-4px;top:44px;writing-mode:vertical-rl;font-size:12.5px;letter-spacing:.55em;color:rgba(234,229,217,.5)}
+.tate{position:absolute;right:-4px;top:44px;writing-mode:vertical-rl;font-size:12.5px;letter-spacing:.55em;color:rgba(242,240,237,.5)}
 @media(max-width:760px){.tate{display:none}}
 /* 一行定位语：行宽控制在舒适 measure 内 */
 .hero-lead{margin-top:30px;max-width:38em;font-size:clamp(15px,1.8vw,17.5px);font-weight:300;line-height:2}
-.hero-lead b{font-weight:500;color:var(--vermi)}
+.hero-lead b{font-weight:500;color:var(--gold-soft)}
 /* 发丝分隔线：展卷时自左画出 */
-.hero-rule{width:min(440px,100%);height:1px;background:var(--hair);margin:30px 0 28px;transform-origin:left center}
+.hero-rule{width:min(440px,100%);height:1px;background:var(--line-strong);margin:30px 0 28px;transform-origin:left center}
 
 /* ── 手引 · 安装 tab ───────────────────────────── */
-.inst-tabs{position:relative;display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--hair-soft);scrollbar-width:none}
+.inst-tabs{position:relative;display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}
 .inst-tabs::-webkit-scrollbar{display:none}
 .inst-tab{flex:none;appearance:none;background:none;border:none;font-family:var(--font-serif);font-weight:300;font-size:13.5px;letter-spacing:.22em;color:var(--dim);padding:12px 15px 13px;cursor:pointer;transition:color .35s}
-.inst-tab:hover{color:var(--paper)}
-.inst-tab[aria-selected="true"]{color:var(--paper)}
-.inst-ind{display:none;position:absolute;left:0;bottom:-1px;height:1px;width:var(--tw,52px);background:var(--paper);transform:translateX(var(--tx,0px));transition:transform .55s var(--ease),width .55s var(--ease)}
+.inst-tab:hover{color:var(--text)}
+.inst-tab[aria-selected="true"]{color:var(--text)}
+.inst-ind{display:none;position:absolute;left:0;bottom:-1px;height:1px;width:var(--tw,52px);background:var(--gold);transform:translateX(var(--tx,0px));transition:transform .55s var(--ease),width .55s var(--ease)}
 .js .inst-ind{display:block}
 .inst-panels{display:grid}
 .inst-panel{min-width:0}
 .js .inst-panel{grid-area:1/1;opacity:0;visibility:hidden;transition:opacity .3s ease,visibility 0s .3s}
 .js .inst-panel.active{opacity:1;visibility:visible;transition:opacity .5s var(--ease),visibility 0s 0s}
-.inst-code{display:flex;align-items:stretch;border:1px solid var(--hair);background:var(--code)}
-pre.code{flex:1;min-width:0;padding:13px 18px;font-size:13px;line-height:1.75;overflow-x:auto;color:var(--paper)}
-.copy{appearance:none;background:none;border:none;border-left:1px solid var(--hair);padding:0 18px;font-family:var(--font-serif);font-weight:300;font-size:12.5px;letter-spacing:.2em;color:var(--dim);cursor:pointer;transition:color .3s;white-space:nowrap}
-.copy:hover{color:var(--paper)}
-.copy.done{color:var(--vermi)}
+.inst-code{display:flex;align-items:stretch;border:1px solid var(--line-strong);background:var(--surface)}
+pre.code{flex:1;min-width:0;padding:13px 18px;font-size:13px;line-height:1.75;overflow-x:auto;color:var(--text)}
+.copy{appearance:none;background:none;border:none;border-left:1px solid var(--line);padding:0 18px;font-family:var(--font-serif);font-weight:300;font-size:12.5px;letter-spacing:.2em;color:var(--dim);cursor:pointer;transition:color .3s;white-space:nowrap}
+.copy:hover{color:var(--text)}
+.copy.done{color:var(--gold-soft)}
 .inst-note{margin-top:12px;font-size:12.5px;color:var(--dim);letter-spacing:.08em}
-.inst-note .mono{font-size:12px;color:var(--paper)}
-.hero-meta{margin-top:26px;font-family:var(--font-latin);font-size:13px;color:var(--dim);letter-spacing:.18em}
-.hero-meta a{border-bottom:1px solid var(--hair);padding-bottom:2px;transition:color .3s}
-.hero-meta a:hover{color:var(--paper)}
+.inst-note .mono{font-size:12px;color:var(--text)}
+.hero-meta{margin-top:26px;font-family:var(--font-latin);font-size:13px;color:var(--faint);letter-spacing:.18em}
+.hero-meta a,.foot-meta a{position:relative;transition:color .3s}
+.hero-meta a::after,.foot-meta a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:1px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease)}
+.hero-meta a:hover,.foot-meta a:hover{color:var(--gold-soft)}
+.hero-meta a:hover::after,.foot-meta a:hover::after{transform:scaleX(1)}
 
 /* ── 卷 · 各节 ─────────────────────────────────── */
-.sec{position:relative;max-width:920px;margin:0 auto;padding:96px 24px 0;border-top:1px solid var(--hair-soft)}
+.sec{position:relative;max-width:920px;margin:0 auto;padding:96px 24px 0;border-top:1px solid var(--line)}
 .sec-head{position:relative;margin-bottom:46px}
-.sec-no{color:var(--indigo);font-size:13px;letter-spacing:.6em;font-weight:500}
+.sec-no{color:var(--gold);font-size:13px;letter-spacing:.6em;font-weight:500}
 .sec-title{font-size:clamp(26px,3.6vw,36px);font-weight:400;margin-top:16px;letter-spacing:.1em}
 .sec-lead{color:var(--dim);max-width:36em;margin-top:18px;font-size:15px;line-height:2}
-.vmark{position:absolute;right:0;top:4px;writing-mode:vertical-rl;font-size:11px;letter-spacing:.42em;color:rgba(234,229,217,.3)}
+.vmark{position:absolute;right:0;top:4px;writing-mode:vertical-rl;font-size:11px;letter-spacing:.42em;color:rgba(242,240,237,.3)}
 @media(max-width:980px){.vmark{display:none}}
 
 /* 清册 · 特性与命令行式列表 */
 .ledger{margin-top:6px}
-.row{display:grid;grid-template-columns:64px 1fr;gap:20px;padding:24px 0;border-top:1px solid var(--hair-soft);align-items:baseline}
-.row:last-child{border-bottom:1px solid var(--hair-soft)}
-.row .idx{font-family:var(--font-latin);font-weight:300;font-size:16px;color:var(--indigo)}
+.row{display:grid;grid-template-columns:64px 1fr;gap:20px;padding:24px 0;border-top:1px solid var(--line);align-items:baseline}
+.row:last-child{border-bottom:1px solid var(--line)}
+.row .idx{font-family:var(--font-latin);font-weight:300;font-size:16px;color:var(--gold)}
 .row h3{font-size:16px;font-weight:400;letter-spacing:.06em}
 .row h3 .mono{font-size:13.5px;font-weight:400}
 .row p{color:var(--dim);font-size:14px;margin-top:4px;line-height:1.95}
 
 /* 工序 · 三栏步骤 */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--hair-soft)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}
 .step{padding:40px 30px 14px 0}
-.step+.step{padding-left:30px;border-left:1px solid var(--hair-soft)}
-.step .n{color:var(--indigo);font-size:22px;font-weight:400;letter-spacing:.2em}
+.step+.step{padding-left:30px;border-left:1px solid var(--line)}
+.step .n{color:var(--gold);font-size:22px;font-weight:400;letter-spacing:.2em}
 .step h3{margin-top:20px;font-size:18px;font-weight:400;letter-spacing:.1em}
 .step p{margin-top:10px;color:var(--dim);font-size:14px;line-height:2}
-@media(max-width:760px){.steps{grid-template-columns:1fr}.step,.step+.step{padding:28px 0;border-left:none}.step+.step{border-top:1px solid var(--hair-soft)}}
+@media(max-width:760px){.steps{grid-template-columns:1fr}.step,.step+.step{padding:28px 0;border-left:none}.step+.step{border-top:1px solid var(--line)}}
 
-/* 片库 · 页面示意框 */
-.frame{border:1px solid var(--hair);background:var(--code)}
-.frame-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--hair-soft)}
-.fb-path{font-size:12px;color:var(--dim);letter-spacing:.08em}
-.fb-path b{color:var(--paper);font-weight:400}
-.fakesearch{font-size:12px;color:var(--dim);border:1px solid var(--hair);padding:6px 14px;letter-spacing:.08em}
-.frame-chips{display:flex;gap:20px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--hair-soft)}
-.chip{font-size:12.5px;color:var(--dim);letter-spacing:.12em}
-.chip.on{color:var(--paper)}
-.chip.on::before{content:"";display:inline-block;width:5px;height:5px;background:var(--vermi);margin-right:9px;vertical-align:2px}
-.wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(116px,1fr));gap:14px;padding:20px 16px}
-.cover{position:relative;aspect-ratio:2/3;border:1px solid var(--hair);transition:border-color .5s var(--ease),transform .5s var(--ease)}
-.cover:hover{border-color:rgba(234,229,217,.55);transform:translateY(-2px)}
-.cover .no{position:absolute;left:10px;bottom:9px;font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;color:rgba(234,229,217,.88);transition:color .35s}
-.cover:hover .no{color:var(--vermi)}
-.cover .actor{position:absolute;right:10px;bottom:9px;font-size:11px;letter-spacing:.14em;color:rgba(234,229,217,.55)}
-.frame-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--hair-soft);font-size:12px;color:var(--dim);letter-spacing:.1em}
-.preview-cap{margin-top:20px;font-size:13.5px;color:var(--dim)}
-.preview-cap b{color:var(--paper);font-weight:500}
+/* ── 片库复刻区：CSS 值与 kuraya/web/style.css 一致 ── */
+.lib{margin:0 -24px}
+.lib-masthead{padding:22px 48px 16px;position:relative;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.lib-brand{display:flex;align-items:center;gap:10px}
+.lib-mark{display:flex;color:var(--gold)}
+.lib-mark svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.1;stroke-linejoin:miter}
+.lib-mark circle{opacity:.45}
+.lib-mark .mark-core{fill:currentColor;stroke:none}
+.lib-title{font-size:15px;font-weight:500;letter-spacing:.22em;line-height:1;color:var(--text)}
+.lib-kanji{font-size:12.5px;color:var(--gold-soft);letter-spacing:.1em;line-height:1}
+.lib-rule{width:1px;height:12px;background:var(--line-strong);margin:0 3px}
+.lib-eyebrow{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--faint);font-weight:500;line-height:1}
+.lib-stats{display:flex;gap:20px;align-items:baseline;flex-wrap:wrap;margin-left:auto}
+.lib-stats .num{font-size:13px;font-weight:500;font-variant-numeric:tabular-nums}
+.lib-stats .lbl{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-left:5px}
+.lib-toolbar{position:sticky;top:49px;z-index:30;background:rgba(8,9,11,.82);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border-bottom:1px solid var(--line);padding:14px 48px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.lib-search{position:relative;flex:1;min-width:200px;max-width:400px}
+.lib-search svg{position:absolute;left:0;top:50%;transform:translateY(-50%);opacity:.4}
+.lib-search input{width:100%;padding:8px 22px 8px 26px;border:none;border-bottom:1px solid var(--line-strong);background:transparent;color:var(--text);font-size:14px;outline:none;font-family:inherit;transition:border-color .3s}
+.lib-search input:focus{border-bottom-color:var(--gold)}
+.lib-search input::placeholder{color:var(--faint)}
+.lib-sort{padding:7px 26px 7px 12px;border-radius:2px;border:1px solid var(--line-strong);background:transparent;color:var(--dim);font-size:12px;outline:none;cursor:pointer;font-family:inherit;letter-spacing:.04em;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%239c9a96' stroke-width='1.5'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;transition:border-color .2s,color .2s}
+.lib-sort:hover{border-color:var(--gold);color:var(--text)}
+.lib-count{color:var(--faint);font-size:11.5px;letter-spacing:.1em;margin-left:auto;font-variant-numeric:tabular-nums}
+.lib-chips{display:flex;gap:7px;padding:18px 48px 4px;flex-wrap:wrap}
+.lib-chip{font-size:12px;padding:5px 13px;border-radius:100px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--dim);font-family:inherit;letter-spacing:.01em;transition:all .2s}
+.lib-chip:hover{border-color:var(--line-strong);color:var(--text)}
+.lib-chip.on{background:var(--gold-soft);border-color:var(--gold-soft);color:#17150e;font-weight:500}
+.lib-chip .n{opacity:.5;font-size:10.5px;margin-left:4px;font-variant-numeric:tabular-nums}
+.lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:30px 22px;padding:30px 48px 90px;position:relative;z-index:2}
+a.lib-card{text-decoration:none;color:inherit;display:block;position:relative;opacity:0;transform:translateY(14px);animation:rise .55s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+.lib-cover{position:relative;width:100%;aspect-ratio:2/3;overflow:hidden;background:var(--surface-2);border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.5);transition:box-shadow .45s cubic-bezier(.16,1,.3,1)}
+.lib-cover::after{content:"";position:absolute;inset:0;border-radius:3px;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.lib-cover img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s cubic-bezier(.16,1,.3,1),filter .45s;filter:saturate(.92) contrast(1.02)}
+a.lib-card:hover .lib-cover{box-shadow:0 22px 50px -18px rgba(0,0,0,.9)}
+a.lib-card:hover .lib-cover img{transform:scale(1.05);filter:saturate(1.05) contrast(1.02)}
+.lib-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .35s;background:linear-gradient(to top,rgba(0,0,0,.5),rgba(0,0,0,.15))}
+a.lib-card:hover .lib-play{opacity:1}
+.lib-play span{width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.55);background:rgba(0,0,0,.3);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;transform:scale(.86);transition:transform .35s cubic-bezier(.16,1,.3,1)}
+a.lib-card:hover .lib-play span{transform:scale(1)}
+.lib-meta{padding:13px 2px 0}
+.lib-code{font-size:12px;letter-spacing:.1em;color:var(--gold-soft);font-variant-numeric:tabular-nums;font-weight:500}
+.lib-actors{font-size:14.5px;color:var(--text);margin-top:5px;font-weight:400;letter-spacing:-.005em;line-height:1.35}
+.lib-sub{font-size:11px;color:var(--faint);margin-top:7px;display:flex;gap:8px;align-items:center;letter-spacing:.03em}
+.lib-sub .dot{width:2px;height:2px;border-radius:50%;background:var(--faint);flex:none}
+.lib-sub .studio{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lib-sub .date{white-space:nowrap;font-variant-numeric:tabular-nums}
+/* 片库移动端规则（与 style.css @media max-width:720px 一致） */
+@media(max-width:720px){
+  .lib-masthead{padding:16px 22px 12px}
+  .lib-stats{margin-left:0;gap:14px}
+  .lib-toolbar,.lib-chips{padding-left:22px;padding-right:22px}
+  .lib-grid{padding:24px 22px 60px;gap:24px 16px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+}
+.preview-cap{margin-top:-46px;font-size:13.5px;color:var(--dim)}
+.preview-cap b{color:var(--text);font-weight:500}
 
 /* 命令 · 终端示意（等宽仅用于命令本体） */
-.term{border:1px solid var(--hair);background:var(--code);padding:26px 28px;font-family:var(--font-mono);font-size:12.5px;line-height:2;letter-spacing:.02em;overflow-x:auto}
-.term .t1{color:var(--indigo)}
+.term{border:1px solid var(--line-strong);background:var(--surface);padding:26px 28px;font-family:var(--font-mono);font-size:12.5px;line-height:2;letter-spacing:.02em;overflow-x:auto}
+.term .t1{color:var(--gold)}
 .term .t2{letter-spacing:.3em;font-weight:400}
-.term .dim{color:var(--dim)}
-.term .path{color:var(--paper)}
-.term .num{color:var(--indigo);font-weight:400}
-.term .rule{color:rgba(234,229,217,.22)}
+.term .kanji{color:var(--gold-soft)}
+.term .dim{color:var(--faint)}
+.term .path{color:var(--text)}
+.term .num{color:var(--gold);font-weight:400}
+.term .rule{color:rgba(242,240,237,.22)}
 
 /* ── 落款 · 页脚 ───────────────────────────────── */
-footer{border-top:1px solid var(--hair-soft);margin-top:110px;padding:60px 24px 64px}
+footer{border-top:1px solid var(--line);margin-top:110px;padding:60px 24px 64px}
 .foot-in{max-width:920px;margin:0 auto;text-align:center}
 .declare{max-width:38em;margin:0 auto;font-size:14px;color:var(--dim);line-height:2.1}
-.declare b{color:var(--paper);font-weight:500}
-.declare-sub{margin-top:14px;font-size:12.5px;color:var(--dim);letter-spacing:.06em}
-.foot-meta{margin-top:30px;font-family:var(--font-latin);font-size:13px;color:var(--dim);letter-spacing:.18em}
-.foot-meta a{border-bottom:1px solid var(--hair);padding-bottom:2px;transition:color .3s}
-.foot-meta a:hover{color:var(--paper)}
+.declare b{color:var(--text);font-weight:500}
+.declare-sub{margin-top:14px;font-size:12.5px;color:var(--faint);letter-spacing:.06em}
+.foot-meta{margin-top:30px;font-family:var(--font-latin);font-size:13px;color:var(--faint);letter-spacing:.18em}
 
 /* ── 动效 · 展卷体系（.js 启用；无 JS 全部可见） ── */
 /* 支撑态：区块入场——部分可见的默认态 + 缓慢指数缓出 */
@@ -208,6 +272,7 @@ footer{border-top:1px solid var(--hair-soft);margin-top:110px;padding:60px 24px 
   .js .fade{opacity:1;transform:none;transition:none}
   .js .inst-panel,.js .inst-panel.active{transition:none}
   .js .inst-ind{transition:none}
+  a.lib-card{opacity:1;transform:none;animation:none}
   html{scroll-behavior:auto}
 }
 </style>
@@ -219,7 +284,12 @@ footer{border-top:1px solid var(--hair-soft);margin-top:110px;padding:60px 24px 
 <!-- 檐 · 页眉 -->
 <header class="mast">
   <div class="mast-in">
-    <a class="brand" href="#top">KURAYA 蔵屋</a>
+    <a class="brand" href="#top">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/><path d="M12 3.8L20.2 12 12 20.2 3.8 12z"/><path class="mark-core" d="M12 9.2l2.8 2.8-2.8 2.8-2.8-2.8z"/></svg>
+      </span>
+      KURAYA 蔵屋
+    </a>
     <nav aria-label="章节导航">
       <a href="#about">是什么</a>
       <a href="#flow">工序</a>
@@ -233,7 +303,7 @@ footer{border-top:1px solid var(--hair-soft);margin-top:110px;padding:60px 24px 
 
 <main id="main">
 
-  <!-- 门面 · Hero：印章 + logotype + 定位语 + 安装 tab（整屏容纳） -->
+  <!-- 门面 · Hero：金印 + logotype + 定位语 + 安装 tab（整屏容纳） -->
   <section class="hero" id="top" aria-label="品牌介绍">
     <div class="watermark" aria-hidden="true">蔵</div>
     <div class="hero-in">
@@ -351,45 +421,128 @@ pipx install .</pre>
     </div>
   </section>
 
-  <!-- 參 · 片库预览 -->
+  <!-- 參 · 片库预览：直接复刻真实产物（kuraya/web 静态版） -->
   <section class="sec fade" id="preview" aria-labelledby="h-preview">
     <div class="sec-head">
       <span class="vmark" aria-hidden="true">片藏</span>
       <p class="sec-no">參</p>
       <h2 class="sec-title" id="h-preview">片库预览</h2>
-      <p class="sec-lead">重建后的片库页面——一页纯离线 HTML，无服务、无追踪，只有你的收藏。</p>
+      <p class="sec-lead">以下不是示意图——这就是重建出的 index.html 本身。一页纯离线 HTML，无服务、无追踪，只有你的收藏。</p>
     </div>
-    <div class="frame">
-      <div class="frame-bar">
-        <span class="fb-path">片库 / <b>index.html</b></span>
-        <span class="fakesearch">搜索番号 · 标题 · 演员…</span>
+
+    <div class="lib">
+      <!-- 顶部：家纹 + 词标 + Private Collection + 统计 -->
+      <div class="lib-masthead">
+        <div class="lib-brand">
+          <span class="lib-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/><path d="M12 3.8L20.2 12 12 20.2 3.8 12z"/><path class="mark-core" d="M12 9.2l2.8 2.8-2.8 2.8-2.8-2.8z"/></svg>
+          </span>
+          <span class="lib-title">KURAYA</span>
+          <span class="lib-kanji">蔵屋</span>
+          <span class="lib-rule"></span>
+          <span class="lib-eyebrow">Private Collection</span>
+        </div>
+        <div class="lib-stats">
+          <div><span class="num">100</span><span class="lbl">部影片</span></div>
+          <div><span class="num">12</span><span class="lbl">位演员</span></div>
+          <div><span class="num">8</span><span class="lbl">个厂商</span></div>
+        </div>
       </div>
-      <div class="frame-chips">
-        <span class="chip on">全部</span>
-        <span class="chip">未观看</span>
-        <span class="chip">按演员</span>
-        <span class="chip">按番号</span>
+
+      <!-- 控制栏：搜索 + 排序 + 计数 -->
+      <div class="lib-toolbar">
+        <div class="lib-search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" placeholder="搜索演员 · 番号 · 厂商">
+        </div>
+        <select class="lib-sort" aria-label="排序方式">
+          <option>发行日期 · 新到旧</option>
+          <option>发行日期 · 旧到新</option>
+          <option>入库时间 · 新到旧</option>
+        </select>
+        <span class="lib-count">100 / 100</span>
       </div>
-      <div class="wall">
-        <figure class="cover" style="background:linear-gradient(165deg,#42526f 0%,#222a3c 72%)"><figcaption class="no">KUR-001</figcaption><span class="actor">演员甲</span></figure>
-        <figure class="cover" style="background:linear-gradient(165deg,#5a4438 0%,#2b2018 72%)"><figcaption class="no">ABC-123</figcaption><span class="actor">演员乙</span></figure>
-        <figure class="cover" style="background:linear-gradient(165deg,#4c4666 0%,#262238 72%)"><figcaption class="no">MIS-042</figcaption><span class="actor">演员丙</span></figure>
-        <figure class="cover" style="background:linear-gradient(165deg,#3f5a4e 0%,#202e27 72%)"><figcaption class="no">KUR-002</figcaption><span class="actor">演员丁</span></figure>
-        <figure class="cover" style="background:linear-gradient(165deg,#3f555e 0%,#202c31 72%)"><figcaption class="no">NEO-318</figcaption><span class="actor">演员甲</span></figure>
-        <figure class="cover" style="background:linear-gradient(165deg,#5d4430 0%,#2c2117 72%)"><figcaption class="no">XYZ-777</figcaption><span class="actor">演员乙</span></figure>
-        <figure class="cover" style="background:linear-gradient(165deg,#46516e 0%,#242a3a 72%)"><figcaption class="no">KUR-003</figcaption><span class="actor">演员丙</span></figure>
-        <figure class="cover" style="background:linear-gradient(165deg,#55583d 0%,#2a2c1d 72%)"><figcaption class="no">FUT-055</figcaption><span class="actor">演员丁</span></figure>
-        <figure class="cover" style="background:linear-gradient(165deg,#48505c 0%,#242830 72%)"><figcaption class="no">RAI-081</figcaption><span class="actor">演员甲</span></figure>
-        <figure class="cover" style="background:linear-gradient(165deg,#54445c 0%,#2a222e 72%)"><figcaption class="no">KUR-004</figcaption><span class="actor">演员乙</span></figure>
-        <figure class="cover" style="background:linear-gradient(165deg,#3d4a5c 0%,#1f2731 72%)"><figcaption class="no">TEN-310</figcaption><span class="actor">演员丙</span></figure>
-        <figure class="cover" style="background:linear-gradient(165deg,#5a4038 0%,#2d1f1b 72%)"><figcaption class="no">SUM-026</figcaption><span class="actor">演员丁</span></figure>
+
+      <!-- 演员筛选 -->
+      <div class="lib-chips">
+        <button type="button" class="lib-chip on">全部</button>
+        <button type="button" class="lib-chip">演员甲<span class="n">3</span></button>
+        <button type="button" class="lib-chip">演员乙<span class="n">2</span></button>
+        <button type="button" class="lib-chip">演员丙<span class="n">2</span></button>
       </div>
-      <div class="frame-foot">
-        <span>100 部 · 纯离线 · 可搜索</span>
-        <span>点击封面即播</span>
+
+      <!-- 卡片网格：封面为外部生成资产 covers/cover-N.png（2:3） -->
+      <div class="lib-grid">
+        <a class="lib-card" href="#preview" style="animation-delay:0ms">
+          <div class="lib-cover">
+            <img src="covers/cover-1.png" loading="lazy" alt="">
+            <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
+          </div>
+          <div class="lib-meta">
+            <div class="lib-code">KUR-001</div>
+            <div class="lib-actors">演员甲</div>
+            <div class="lib-sub"><span class="studio">星霜舍</span><span class="dot"></span><span class="date">2026-03-14 · 128min</span></div>
+          </div>
+        </a>
+        <a class="lib-card" href="#preview" style="animation-delay:22ms">
+          <div class="lib-cover">
+            <img src="covers/cover-2.png" loading="lazy" alt="">
+            <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
+          </div>
+          <div class="lib-meta">
+            <div class="lib-code">ABC-123</div>
+            <div class="lib-actors">演员乙</div>
+            <div class="lib-sub"><span class="studio">紫電堂</span><span class="dot"></span><span class="date">2026-01-08 · 96min</span></div>
+          </div>
+        </a>
+        <a class="lib-card" href="#preview" style="animation-delay:44ms">
+          <div class="lib-cover">
+            <img src="covers/cover-3.png" loading="lazy" alt="">
+            <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
+          </div>
+          <div class="lib-meta">
+            <div class="lib-code">MIS-042</div>
+            <div class="lib-actors">演员丙</div>
+            <div class="lib-sub"><span class="studio">白夜社</span><span class="dot"></span><span class="date">2025-11-22 · 143min</span></div>
+          </div>
+        </a>
+        <a class="lib-card" href="#preview" style="animation-delay:66ms">
+          <div class="lib-cover">
+            <img src="covers/cover-4.png" loading="lazy" alt="">
+            <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
+          </div>
+          <div class="lib-meta">
+            <div class="lib-code">KUR-002</div>
+            <div class="lib-actors">演员丁</div>
+            <div class="lib-sub"><span class="studio">青嵐舎</span><span class="dot"></span><span class="date">2026-02-02 · 112min</span></div>
+          </div>
+        </a>
+        <a class="lib-card" href="#preview" style="animation-delay:88ms">
+          <div class="lib-cover">
+            <img src="covers/cover-5.png" loading="lazy" alt="">
+            <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
+          </div>
+          <div class="lib-meta">
+            <div class="lib-code">NEO-318</div>
+            <div class="lib-actors">演员甲</div>
+            <div class="lib-sub"><span class="studio">星霜舍</span><span class="dot"></span><span class="date">2025-09-30 · 88min</span></div>
+          </div>
+        </a>
+        <a class="lib-card" href="#preview" style="animation-delay:110ms">
+          <div class="lib-cover">
+            <img src="covers/cover-6.png" loading="lazy" alt="">
+            <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
+          </div>
+          <div class="lib-meta">
+            <div class="lib-code">XYZ-777</div>
+            <div class="lib-actors">演员乙</div>
+            <div class="lib-sub"><span class="studio">紫電堂</span><span class="dot"></span><span class="date">2026-04-19 · 121min</span></div>
+          </div>
+        </a>
       </div>
     </div>
-    <p class="preview-cap">点封面即经 <b>kuraya:</b> 协议调起本机播放器 —— 一册离线可读的影片目録。</p>
+
+    <p class="preview-cap">点封面经 <b>kuraya:</b> 协议调起本机播放器——一册离线可读的影片目録。</p>
   </section>
 
   <!-- 肆 · 命令行速览 -->
@@ -401,7 +554,7 @@ pipx install .</pre>
       <p class="sec-lead">双击运行进入菜单；也可用命令行，便于脚本与计划任务调用。</p>
     </div>
     <div class="term" aria-label="Kuraya 终端菜单示意">
-      <p><span class="t1">◈</span>  <span class="t2">K U R A Y A</span>  <span class="t2" style="letter-spacing:.2em">蔵屋</span>  <span class="dim">v0.1.0</span></p>
+      <p><span class="t1">◈</span>  <span class="t2">K U R A Y A</span>  <span class="kanji" style="letter-spacing:.2em">蔵屋</span>  <span class="dim">v0.1.0</span></p>
       <p class="rule">────────────────────────────────────────────────────────────</p>
       <p><span class="dim">影片库</span>  <span class="path">D:\Media\Library</span>  <span class="dim">100 部</span></p>
       <p><span class="dim">待整理</span>  <span class="path">D:\Media\Library\待整理</span>  <span class="dim">2 个文件</span></p>
@@ -461,6 +614,7 @@ pipx install .</pre>
   </div>
 </footer>
 
+<span class="sr-only" id="copy-live" aria-live="polite"></span>
 <script>
 (function(){
   'use strict';
@@ -539,6 +693,5 @@ pipx install .</pre>
   }
 })();
 </script>
-<span class="sr-only" id="copy-live" aria-live="polite"></span>
 </body>
 </html>
