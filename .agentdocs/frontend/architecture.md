@@ -12,7 +12,7 @@ index.html          # 页面骨架：meta/OG 标签、内联 SVG favicon、Googl
 src/i18n.js         # 三语词典（简中原文/繁中/英文）+ 语言检测与应用逻辑
 src/style.css       # 全部样式（设计令牌 + 各区块），逐字对齐片库 kuraya/web/style.css
 src/main.js         # 交互：多语言、复制命令、安装 tab（roving tabindex）、片库复刻区（搜索/chips/排序 + 封面大图 lightbox）、展卷淡入 IO、活终端
-public/covers/      # 片库预览封面 cover-1..6.png（2:3），HTML 相对路径引用
+public/covers/      # 片库预览封面 cover-1..6.webp（2:3，900x1350，WebP q82），HTML 相对路径引用
 vite.config.js      # base './'；版本注入：{{VERSION}} 占位 + __KURAYA_VERSION__ define
 ```
 
