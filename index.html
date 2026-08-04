@@ -4,20 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KURAYA 蔵屋 — 影片刮削与编目工具</title>
-<meta name="description" content="KURAYA 蔵屋 —— 影片刮削与编目工具：把散乱的影片文件整理成带封面与元数据的有序收藏，并生成可离线浏览的片库页面。macOS / Windows / Linux 一行命令安装，MIT 许可。">
-<link rel="canonical" href="index.html"><!-- 部署地址未定：上线前替换为绝对 URL -->
+<meta name="description" content="KURAYA 蔵屋 —— 影片刮削与编目工具：把散落的影片文件整理成带封面与元数据的有序收藏，并生成离线可读的片库页面。macOS / Windows / Linux 一行命令安装，MIT 许可。">
+<link rel="canonical" href="index.html" vite-ignore><!-- 部署地址未定：上线前替换为绝对 URL -->
 <meta name="theme-color" content="#08090b">
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="KURAYA 蔵屋">
 <meta property="og:title" content="KURAYA 蔵屋 — 影片刮削与编目工具">
-<meta property="og:description" content="把散乱的影片文件整理成带封面和元数据的有序收藏，并生成可离线浏览的片库页面。本地优先，MIT 许可。">
+<meta property="og:description" content="将散落的影片文件整理成带封面与元数据的有序收藏，生成离线可读的片库页面。本地优先，MIT 许可。">
 <meta property="og:url" content="index.html"><!-- 同上：上线前替换为绝对 URL -->
 <meta property="og:locale" content="zh_CN">
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="KURAYA 蔵屋 — 影片刮削与编目工具">
-<meta name="twitter:description" content="把散乱的影片文件整理成带封面和元数据的有序收藏，并生成可离线浏览的片库页面。">
+<meta name="twitter:description" content="将散落的影片文件整理成带封面与元数据的有序收藏，生成离线可读的片库页面。">
 <!-- 内联 SVG favicon：片库家纹（金圆环菱格，海鼠壁纹样，与 kuraya/web 一致） -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%230d0e11'/%3E%3Cg fill='none' stroke='%23c9a227' stroke-width='1.1' stroke-linejoin='miter'%3E%3Ccircle cx='12' cy='12' r='9.2' opacity='.45'/%3E%3Cpath d='M12 3.8L20.2 12 12 20.2 3.8 12z'/%3E%3Cpath d='M12 9.2l2.8 2.8-2.8 2.8-2.8-2.8z' fill='%23c9a227' stroke='none'/%3E%3C/g%3E%3C/svg%3E">
 <!-- 渐进增强开关：JS 可用才启用动效（无 JS 时内容完整可见） -->
@@ -26,260 +26,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Noto+Serif+SC:wght@300;400;500&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
-<style>
-/* ── 设计令牌：与片库 kuraya/web/style.css 完全一致，金系 ── */
-:root{
-  color-scheme:dark;
-  --bg:#08090b;
-  --surface:#101216;
-  --surface-2:#16181d;
-  --line:rgba(255,255,255,.07);
-  --line-strong:rgba(255,255,255,.14);
-  --text:#f2f0ed;
-  --dim:#9c9a96;
-  --faint:#5f5d5a;
-  --gold:#c9a227;
-  --gold-soft:#e8cf8b;
-  --font-serif:"Noto Serif SC","Songti SC","STSong","Noto Serif CJK SC",serif;
-  --font-latin:"Cormorant Garamond","Noto Serif SC",serif;
-  --font-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace,"Noto Serif SC",serif;
-  --ease: cubic-bezier(.16,1,.3,1); /* 全局指数缓出 */
-}
-*{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;scrollbar-color:#2a2c31 transparent}
-::-webkit-scrollbar{width:11px}
-::-webkit-scrollbar-thumb{background:#26282d;border-radius:8px;border:3px solid var(--bg)}
-::-webkit-scrollbar-track{background:transparent}
-/* 墨的层次：纵向渐变打底 + 片库同款极细颗粒（feTurbulence，140px tile，opacity .028） */
-body{
-  background-color:var(--bg);
-  background-image:linear-gradient(180deg,#0a0c0f 0%,var(--bg) 45%,#060708 100%);
-  background-attachment:fixed;
-  color:var(--text);
-  font-family:var(--font-serif);
-  font-weight:300;font-size:16px;line-height:2.05;letter-spacing:.03em;
-  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
-}
-body::before{
-  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.028;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-main,footer{position:relative;z-index:1}
-::selection{background:rgba(201,162,39,.3)}
-a{color:inherit;text-decoration:none}
-:focus-visible{outline:1px solid var(--gold);outline-offset:4px}
-.mono,pre,code{font-family:var(--font-mono);font-weight:400}
-.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
-
-/* ── 无障碍：跳转链接 ───────────────────────────── */
-.skip{position:absolute;left:-9999px;top:0}
-.skip:focus{position:fixed;left:12px;top:12px;z-index:100;background:var(--gold);color:#17150e;padding:10px 20px;font-size:13px;letter-spacing:.1em}
-
-/* ── 檐 · 页眉（家纹 + 词标；链接无下划线，hover 金色） ── */
-.mast{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--line)}
-.mast-in{max-width:920px;margin:0 auto;padding:13px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px}
-.brand{display:flex;align-items:center;gap:10px;font-family:var(--font-latin);font-size:14px;font-weight:400;letter-spacing:.38em;transition:color .3s}
-.brand:hover{color:var(--gold-soft)}
-.brand-mark{display:flex;color:var(--gold)}
-.brand-mark svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.1;stroke-linejoin:miter}
-.brand-mark circle{opacity:.45}
-.brand-mark .mark-core{fill:currentColor;stroke:none}
-.mast nav{display:flex;gap:22px;flex-wrap:wrap}
-.mast nav a{position:relative;font-size:12.5px;color:var(--dim);letter-spacing:.16em;transition:color .3s}
-.mast nav a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:1px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease)}
-.mast nav a:hover{color:var(--gold-soft)}
-.mast nav a:hover::after{transform:scaleX(1)}
-.mast .ver{font-family:var(--font-latin);font-size:12px;color:var(--faint);letter-spacing:.2em}
-@media(max-width:760px){.mast nav{display:none}}
-
-/* ── 门面 · Hero（含安装 tab，须整屏容纳） ──────── */
-.hero{position:relative;max-width:920px;margin:0 auto;padding:64px 24px 72px;min-height:calc(100vh - 49px);display:flex;align-items:center}
-.watermark{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);font-size:clamp(300px,46vw,600px);line-height:1;color:rgba(242,240,237,.04);font-weight:900;pointer-events:none;user-select:none;z-index:0}
-.hero-in{position:relative;z-index:1}
-/* 落款排：金印 + KURAYA 词标 + 蔵屋 */
-.hero-top{display:flex;align-items:center;gap:22px}
-.seal{width:42px;height:42px;background:var(--gold);color:#17150e;writing-mode:vertical-rl;font-size:14px;font-weight:500;letter-spacing:.3em;display:grid;place-items:center;line-height:1;flex:none}
-.hero-title{font-weight:300}
-.hero-title .en{display:block;font-family:var(--font-latin);font-weight:300;font-size:clamp(16px,2vw,22px);letter-spacing:.56em;margin-left:.56em}
-.hero-title .ja{display:block;font-size:clamp(62px,9.5vw,108px);line-height:1.1;font-weight:300;letter-spacing:.1em;margin-top:6px}
-.hero-title .ja .ch{display:inline-block}
-.tate{position:absolute;right:-4px;top:44px;writing-mode:vertical-rl;font-size:12.5px;letter-spacing:.55em;color:rgba(242,240,237,.5)}
-@media(max-width:760px){.tate{display:none}}
-/* 一行定位语：行宽控制在舒适 measure 内 */
-.hero-lead{margin-top:30px;max-width:38em;font-size:clamp(15px,1.8vw,17.5px);font-weight:300;line-height:2}
-.hero-lead b{font-weight:500;color:var(--gold-soft)}
-/* 发丝分隔线：展卷时自左画出 */
-.hero-rule{width:min(440px,100%);height:1px;background:var(--line-strong);margin:30px 0 28px;transform-origin:left center}
-
-/* ── 手引 · 安装 tab ───────────────────────────── */
-.inst-tabs{position:relative;display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}
-.inst-tabs::-webkit-scrollbar{display:none}
-.inst-tab{flex:none;appearance:none;background:none;border:none;font-family:var(--font-serif);font-weight:300;font-size:13.5px;letter-spacing:.22em;color:var(--dim);padding:12px 15px 13px;cursor:pointer;transition:color .35s}
-.inst-tab:hover{color:var(--text)}
-.inst-tab[aria-selected="true"]{color:var(--text)}
-.inst-ind{display:none;position:absolute;left:0;bottom:-1px;height:1px;width:var(--tw,52px);background:var(--gold);transform:translateX(var(--tx,0px));transition:transform .55s var(--ease),width .55s var(--ease)}
-.js .inst-ind{display:block}
-.inst-panels{display:grid}
-.inst-panel{min-width:0}
-.js .inst-panel{grid-area:1/1;opacity:0;visibility:hidden;transition:opacity .3s ease,visibility 0s .3s}
-.js .inst-panel.active{opacity:1;visibility:visible;transition:opacity .5s var(--ease),visibility 0s 0s}
-.inst-code{display:flex;align-items:stretch;border:1px solid var(--line-strong);background:var(--surface)}
-pre.code{flex:1;min-width:0;padding:13px 18px;font-size:13px;line-height:1.75;overflow-x:auto;color:var(--text)}
-.copy{appearance:none;background:none;border:none;border-left:1px solid var(--line);padding:0 18px;font-family:var(--font-serif);font-weight:300;font-size:12.5px;letter-spacing:.2em;color:var(--dim);cursor:pointer;transition:color .3s;white-space:nowrap}
-.copy:hover{color:var(--text)}
-.copy.done{color:var(--gold-soft)}
-.inst-note{margin-top:12px;font-size:12.5px;color:var(--dim);letter-spacing:.08em}
-.inst-note .mono{font-size:12px;color:var(--text)}
-.hero-meta{margin-top:26px;font-family:var(--font-latin);font-size:13px;color:var(--faint);letter-spacing:.18em}
-.hero-meta a,.foot-meta a{position:relative;transition:color .3s}
-.hero-meta a::after,.foot-meta a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:1px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease)}
-.hero-meta a:hover,.foot-meta a:hover{color:var(--gold-soft)}
-.hero-meta a:hover::after,.foot-meta a:hover::after{transform:scaleX(1)}
-
-/* ── 卷 · 各节 ─────────────────────────────────── */
-.sec{position:relative;max-width:920px;margin:0 auto;padding:96px 24px 0;border-top:1px solid var(--line)}
-.sec-head{position:relative;margin-bottom:46px}
-.sec-no{color:var(--gold);font-size:13px;letter-spacing:.6em;font-weight:500}
-.sec-title{font-size:clamp(26px,3.6vw,36px);font-weight:400;margin-top:16px;letter-spacing:.1em}
-.sec-lead{color:var(--dim);max-width:36em;margin-top:18px;font-size:15px;line-height:2}
-.vmark{position:absolute;right:0;top:4px;writing-mode:vertical-rl;font-size:11px;letter-spacing:.42em;color:rgba(242,240,237,.3)}
-@media(max-width:980px){.vmark{display:none}}
-
-/* 清册 · 特性与命令行式列表 */
-.ledger{margin-top:6px}
-.row{display:grid;grid-template-columns:64px 1fr;gap:20px;padding:24px 0;border-top:1px solid var(--line);align-items:baseline}
-.row:last-child{border-bottom:1px solid var(--line)}
-.row .idx{font-family:var(--font-latin);font-weight:300;font-size:16px;color:var(--gold)}
-.row h3{font-size:16px;font-weight:400;letter-spacing:.06em}
-.row h3 .mono{font-size:13.5px;font-weight:400}
-.row p{color:var(--dim);font-size:14px;margin-top:4px;line-height:1.95}
-
-/* 工序 · 三栏步骤 */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}
-.step{padding:40px 30px 14px 0}
-.step+.step{padding-left:30px;border-left:1px solid var(--line)}
-.step .n{color:var(--gold);font-size:22px;font-weight:400;letter-spacing:.2em}
-.step h3{margin-top:20px;font-size:18px;font-weight:400;letter-spacing:.1em}
-.step p{margin-top:10px;color:var(--dim);font-size:14px;line-height:2}
-@media(max-width:760px){.steps{grid-template-columns:1fr}.step,.step+.step{padding:28px 0;border-left:none}.step+.step{border-top:1px solid var(--line)}}
-
-/* ── 片库复刻区：CSS 值与 kuraya/web/style.css 一致 ── */
-.lib{margin:0 -24px}
-.lib-masthead{padding:22px 48px 16px;position:relative;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
-.lib-brand{display:flex;align-items:center;gap:10px}
-.lib-mark{display:flex;color:var(--gold)}
-.lib-mark svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.1;stroke-linejoin:miter}
-.lib-mark circle{opacity:.45}
-.lib-mark .mark-core{fill:currentColor;stroke:none}
-.lib-title{font-size:15px;font-weight:500;letter-spacing:.22em;line-height:1;color:var(--text)}
-.lib-kanji{font-size:12.5px;color:var(--gold-soft);letter-spacing:.1em;line-height:1}
-.lib-rule{width:1px;height:12px;background:var(--line-strong);margin:0 3px}
-.lib-eyebrow{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--faint);font-weight:500;line-height:1}
-.lib-stats{display:flex;gap:20px;align-items:baseline;flex-wrap:wrap;margin-left:auto}
-.lib-stats .num{font-size:13px;font-weight:500;font-variant-numeric:tabular-nums}
-.lib-stats .lbl{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-left:5px}
-.lib-toolbar{position:sticky;top:49px;z-index:30;background:rgba(8,9,11,.82);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border-bottom:1px solid var(--line);padding:14px 48px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-.lib-search{position:relative;flex:1;min-width:200px;max-width:400px}
-.lib-search svg{position:absolute;left:0;top:50%;transform:translateY(-50%);opacity:.4}
-.lib-search input{width:100%;padding:8px 22px 8px 26px;border:none;border-bottom:1px solid var(--line-strong);background:transparent;color:var(--text);font-size:14px;outline:none;font-family:inherit;transition:border-color .3s}
-.lib-search input:focus{border-bottom-color:var(--gold)}
-.lib-search input::placeholder{color:var(--faint)}
-.lib-sort{padding:7px 26px 7px 12px;border-radius:2px;border:1px solid var(--line-strong);background:transparent;color:var(--dim);font-size:12px;outline:none;cursor:pointer;font-family:inherit;letter-spacing:.04em;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%239c9a96' stroke-width='1.5'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;transition:border-color .2s,color .2s}
-.lib-sort:hover{border-color:var(--gold);color:var(--text)}
-.lib-count{color:var(--faint);font-size:11.5px;letter-spacing:.1em;margin-left:auto;font-variant-numeric:tabular-nums}
-.lib-chips{display:flex;gap:7px;padding:18px 48px 4px;flex-wrap:wrap}
-.lib-chip{font-size:12px;padding:5px 13px;border-radius:100px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--dim);font-family:inherit;letter-spacing:.01em;transition:all .2s}
-.lib-chip:hover{border-color:var(--line-strong);color:var(--text)}
-.lib-chip.on{background:var(--gold-soft);border-color:var(--gold-soft);color:#17150e;font-weight:500}
-.lib-chip .n{opacity:.5;font-size:10.5px;margin-left:4px;font-variant-numeric:tabular-nums}
-.lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:30px 22px;padding:30px 48px 90px;position:relative;z-index:2}
-a.lib-card{text-decoration:none;color:inherit;display:block;position:relative;opacity:0;transform:translateY(14px);animation:rise .55s cubic-bezier(.16,1,.3,1) forwards}
-@keyframes rise{to{opacity:1;transform:none}}
-.lib-cover{position:relative;width:100%;aspect-ratio:2/3;overflow:hidden;background:var(--surface-2);border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.5);transition:box-shadow .45s cubic-bezier(.16,1,.3,1)}
-.lib-cover::after{content:"";position:absolute;inset:0;border-radius:3px;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
-.lib-cover img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s cubic-bezier(.16,1,.3,1),filter .45s;filter:saturate(.92) contrast(1.02)}
-a.lib-card:hover .lib-cover{box-shadow:0 22px 50px -18px rgba(0,0,0,.9)}
-a.lib-card:hover .lib-cover img{transform:scale(1.05);filter:saturate(1.05) contrast(1.02)}
-.lib-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .35s;background:linear-gradient(to top,rgba(0,0,0,.5),rgba(0,0,0,.15))}
-a.lib-card:hover .lib-play{opacity:1}
-.lib-play span{width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.55);background:rgba(0,0,0,.3);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;transform:scale(.86);transition:transform .35s cubic-bezier(.16,1,.3,1)}
-a.lib-card:hover .lib-play span{transform:scale(1)}
-.lib-meta{padding:13px 2px 0}
-.lib-code{font-size:12px;letter-spacing:.1em;color:var(--gold-soft);font-variant-numeric:tabular-nums;font-weight:500}
-.lib-actors{font-size:14.5px;color:var(--text);margin-top:5px;font-weight:400;letter-spacing:-.005em;line-height:1.35}
-.lib-sub{font-size:11px;color:var(--faint);margin-top:7px;display:flex;gap:8px;align-items:center;letter-spacing:.03em}
-.lib-sub .dot{width:2px;height:2px;border-radius:50%;background:var(--faint);flex:none}
-.lib-sub .studio{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lib-sub .date{white-space:nowrap;font-variant-numeric:tabular-nums}
-/* 片库移动端规则（与 style.css @media max-width:720px 一致） */
-@media(max-width:720px){
-  .lib-masthead{padding:16px 22px 12px}
-  .lib-stats{margin-left:0;gap:14px}
-  .lib-toolbar,.lib-chips{padding-left:22px;padding-right:22px}
-  .lib-grid{padding:24px 22px 60px;gap:24px 16px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
-}
-.preview-cap{margin-top:-46px;font-size:13.5px;color:var(--dim)}
-.preview-cap b{color:var(--text);font-weight:500}
-
-/* 命令 · 终端示意（等宽仅用于命令本体） */
-.term{border:1px solid var(--line-strong);background:var(--surface);padding:26px 28px;font-family:var(--font-mono);font-size:12.5px;line-height:2;letter-spacing:.02em;overflow-x:auto}
-.term .t1{color:var(--gold)}
-.term .t2{letter-spacing:.3em;font-weight:400}
-.term .kanji{color:var(--gold-soft)}
-.term .dim{color:var(--faint)}
-.term .path{color:var(--text)}
-.term .num{color:var(--gold);font-weight:400}
-.term .rule{color:rgba(242,240,237,.22)}
-
-/* ── 落款 · 页脚 ───────────────────────────────── */
-footer{border-top:1px solid var(--line);margin-top:110px;padding:60px 24px 64px}
-.foot-in{max-width:920px;margin:0 auto;text-align:center}
-.declare{max-width:38em;margin:0 auto;font-size:14px;color:var(--dim);line-height:2.1}
-.declare b{color:var(--text);font-weight:500}
-.declare-sub{margin-top:14px;font-size:12.5px;color:var(--faint);letter-spacing:.06em}
-.foot-meta{margin-top:30px;font-family:var(--font-latin);font-size:13px;color:var(--faint);letter-spacing:.18em}
-
-/* ── 动效 · 展卷体系（.js 启用；无 JS 全部可见） ── */
-/* 支撑态：区块入场——部分可见的默认态 + 缓慢指数缓出 */
-.js .fade{opacity:.2;transform:translateY(16px);transition:opacity 1.4s var(--ease),transform 1.4s var(--ease)}
-.js .fade.in{opacity:1;transform:none}
-
-/* 焦点时刻：首屏「展卷」入场（仅在不减少动态时运行） */
-@media (prefers-reduced-motion: no-preference){
-  /* 巨大「蔵」水印：微糊 → 清晰显影，900ms（终态回到静态设计的 color alpha） */
-  .js .watermark{opacity:0;filter:blur(22px);animation:wmk-in .9s var(--ease) .05s forwards}
-  @keyframes wmk-in{to{opacity:1;filter:blur(0)}}
-  /* 蔵屋二字如落笔先后到位 */
-  .js .seal{opacity:0;animation:land .8s var(--ease) .1s forwards}
-  .js .hero-title .en{opacity:0;animation:land .8s var(--ease) .18s forwards}
-  .js .hero-title .ch{opacity:0;transform:translateY(.3em);animation:land .75s var(--ease) .3s forwards}
-  .js .hero-title .ch+.ch{animation-delay:.48s}
-  /* 竖排「影片目録」：自上而下展开 */
-  .js .tate{clip-path:inset(0 0 100% 0);animation:unfold .95s var(--ease) .62s forwards}
-  /* 发丝线自左画出 */
-  .js .hero-rule{transform:scaleX(0);animation:rule-in 1s var(--ease) .55s forwards}
-  /* 定位语与安装区安静就位 */
-  .js .hero-lead{opacity:0;animation:land .9s var(--ease) .64s forwards}
-  .js .inst{opacity:0;animation:land .9s var(--ease) .82s forwards}
-  .js .hero-meta{opacity:0;animation:land .9s var(--ease) 1.02s forwards}
-  @keyframes land{to{opacity:1;transform:none}}
-  @keyframes unfold{to{clip-path:inset(0 0 0 0)}}
-  @keyframes rule-in{to{transform:scaleX(1)}}
-}
-
-/* 减少动态偏好：全部立即可见、零过渡 */
-@media (prefers-reduced-motion: reduce){
-  .js .fade{opacity:1;transform:none;transition:none}
-  .js .inst-panel,.js .inst-panel.active{transition:none}
-  .js .inst-ind{transition:none}
-  a.lib-card{opacity:1;transform:none;animation:none}
-  html{scroll-behavior:auto}
-}
-</style>
+<link rel="stylesheet" href="/src/style.css">
 </head>
 <body>
 
-<a class="skip" href="#main">跳到正文</a>
+<a class="skip" href="#main" data-i18n="skip">跳到正文</a>
 
 <!-- 檐 · 页眉 -->
 <header class="mast">
@@ -290,144 +41,98 @@ footer{border-top:1px solid var(--line);margin-top:110px;padding:60px 24px 64px}
       </span>
       KURAYA 蔵屋
     </a>
-    <nav aria-label="章节导航">
-      <a href="#about">是什么</a>
-      <a href="#flow">工序</a>
-      <a href="#preview">片库</a>
-      <a href="#cli">命令</a>
-      <a href="#install">安装</a>
+    <nav aria-label="章节导航" data-i18n-aria="nav.aria">
+      <a href="#preview" data-i18n="nav.preview">片库</a>
+      <a href="#cli" data-i18n="nav.cli">命令</a>
+      <a href="#install" data-i18n="nav.install">安装</a>
     </nav>
-    <span class="ver">v0.1.0</span>
+    <span class="ver">v{{VERSION}}</span>
+    <div class="langs" role="group" aria-label="切换语言" data-i18n-aria="lang.aria">
+      <button type="button" class="lang-btn" data-lang="zh-CN" aria-pressed="true">简</button>
+      <button type="button" class="lang-btn" data-lang="zh-TW" aria-pressed="false">繁</button>
+      <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+    </div>
   </div>
 </header>
 
 <main id="main">
 
-  <!-- 门面 · Hero：金印 + logotype + 定位语 + 安装 tab（整屏容纳） -->
+  <!-- 门面 · Hero：家纹 + logotype + 定位语 + 安装 tab（整屏容纳） -->
   <section class="hero" id="top" aria-label="品牌介绍">
     <div class="watermark" aria-hidden="true">蔵</div>
     <div class="hero-in">
       <div class="hero-top">
-        <span class="seal" aria-hidden="true">蔵屋</span>
+        <span class="hero-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/><path d="M12 3.8L20.2 12 12 20.2 3.8 12z"/><path class="mark-core" d="M12 9.2l2.8 2.8-2.8 2.8-2.8-2.8z"/></svg>
+        </span>
         <h1 class="hero-title">
           <span class="en">KURAYA</span>
           <span class="ja"><span class="ch">蔵</span><span class="ch">屋</span></span>
         </h1>
       </div>
-      <div class="tate" aria-hidden="true">影片目録</div>
-      <p class="hero-lead">把散乱的影片文件，整理成带封面与元数据的有序收藏——<b>可离线浏览</b>。</p>
+      <p class="hero-lead" data-i18n-html="hero.lead">将散落的影片，整理成一座带封面与元数据的片库，<b>离线也能从容欣赏</b>。</p>
 
       <div class="hero-rule" aria-hidden="true"></div>
 
-      <!-- 手引 · 安装：macOS / Windows / Linux / 源码 -->
+      <!-- 手引 · 安装：macOS / Windows / Linux / 解压即用 -->
       <div class="inst" id="install">
-        <div class="inst-tabs" id="inst-tabs" role="tablist" aria-label="选择安装方式">
+        <div class="inst-tabs" id="inst-tabs" role="tablist" aria-label="选择安装方式" data-i18n-aria="install.aria">
           <button type="button" class="inst-tab" id="tab-macos" role="tab" aria-selected="true" aria-controls="panel-macos">macOS</button>
           <button type="button" class="inst-tab" id="tab-win" role="tab" aria-selected="false" aria-controls="panel-win" tabindex="-1">Windows</button>
           <button type="button" class="inst-tab" id="tab-linux" role="tab" aria-selected="false" aria-controls="panel-linux" tabindex="-1">Linux</button>
-          <button type="button" class="inst-tab" id="tab-src" role="tab" aria-selected="false" aria-controls="panel-src" tabindex="-1">源码</button>
+          <button type="button" class="inst-tab" id="tab-zip" role="tab" aria-selected="false" aria-controls="panel-zip" tabindex="-1" data-i18n="inst.tab.zip">解压即用</button>
           <span class="inst-ind" aria-hidden="true"></span>
         </div>
         <div class="inst-panels">
           <div class="inst-panel active" id="panel-macos" role="tabpanel" aria-labelledby="tab-macos">
             <div class="inst-code">
               <pre class="code">brew install tenngoxars/tap/kuraya</pre>
-              <button type="button" class="copy" data-target="panel-macos">复制</button>
+              <button type="button" class="copy" data-target="panel-macos" data-i18n="copy">复制</button>
             </div>
           </div>
           <div class="inst-panel" id="panel-win" role="tabpanel" aria-labelledby="tab-win" tabindex="-1">
             <div class="inst-code">
               <pre class="code">irm https://raw.githubusercontent.com/tenngoxars/Kuraya/main/install.ps1 | iex</pre>
-              <button type="button" class="copy" data-target="panel-win">复制</button>
+              <button type="button" class="copy" data-target="panel-win" data-i18n="copy">复制</button>
             </div>
           </div>
           <div class="inst-panel" id="panel-linux" role="tabpanel" aria-labelledby="tab-linux" tabindex="-1">
             <div class="inst-code">
               <pre class="code">curl -fsSL https://raw.githubusercontent.com/tenngoxars/Kuraya/main/install.sh | bash</pre>
-              <button type="button" class="copy" data-target="panel-linux">复制</button>
+              <button type="button" class="copy" data-target="panel-linux" data-i18n="copy">复制</button>
             </div>
           </div>
-          <div class="inst-panel" id="panel-src" role="tabpanel" aria-labelledby="tab-src" tabindex="-1">
-            <div class="inst-code">
-              <pre class="code">git clone git@github.com:tenngoxars/Kuraya.git &amp;&amp; cd Kuraya
-pipx install .</pre>
-              <button type="button" class="copy" data-target="panel-src">复制</button>
+          <div class="inst-panel" id="panel-zip" role="tabpanel" aria-labelledby="tab-zip" tabindex="-1">
+            <div class="inst-zips">
+              <a class="zip-btn" data-os="mac" href="https://github.com/tenngoxars/Kuraya/releases/latest" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.7 12.9c0-2.6 2.1-3.8 2.2-3.9-1.2-1.7-3-2-3.7-2-1.6-.2-3 .9-3.8.9-.8 0-2-.9-3.3-.9-1.7 0-3.2 1-4.1 2.5-1.8 3-.5 7.6 1.2 10 .8 1.2 1.8 2.5 3.1 2.5 1.2-.1 1.7-.8 3.2-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8-.1 0-2.5-1-2.3-3.9zM14.5 5.3c.7-.8 1.1-2 1-3.1-.9 0-2 .6-2.7 1.4-.6.7-1.2 1.9-1 3 .9.1 1.9-.5 2.7-1.3z"/></svg>
+                <span>macOS</span>
+              </a>
+              <a class="zip-btn" data-os="win" href="https://github.com/tenngoxars/Kuraya/releases/latest" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5l7.5-1v7H3zM11.5 4.3L21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg>
+                <span>Windows</span>
+              </a>
+              <a class="zip-btn" data-os="linux" href="https://github.com/tenngoxars/Kuraya/releases/latest" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a4 4 0 0 0-4 4c0 .5.1 1 .3 1.5C6 8.6 4.8 10.4 4.8 12.4c0 1.3.5 2.5 1.3 3.4-.2.4-.3 1-.3 1.6 0 1.3.9 2.5 2.2 3.2 1 .5 2.2.8 3.5.8s2.5-.3 3.5-.8c1.3-.7 2.2-1.9 2.2-3.2 0-.6-.1-1.2-.3-1.6.8-.9 1.3-2.1 1.3-3.4 0-2-1.2-3.8-3-4.9.2-.5.3-1 .3-1.5a4 4 0 0 0-4-4zM8.2 19.5c-.9-.3-1.5-.9-1.5-1.7 0-.4.1-.7.2-1 .4.7 1.1 1.3 2.1 1.7l-.8 1zm7.6 0l-.8-1c1-.4 1.7-1 2.1-1.7.1.3.2.6.2 1 0 .8-.6 1.4-1.5 1.7z"/><circle cx="9.5" cy="10.3" r="1.1"/><circle cx="14.5" cy="10.3" r="1.1"/></svg>
+                <span>Linux</span>
+              </a>
             </div>
           </div>
         </div>
-        <p class="inst-note">装好后运行 <span class="mono">kuraya</span>，按提示选择影片库即可开始。</p>
+        <p class="inst-note" id="inst-note">装好后运行 <span class="mono">Kuraya</span>，按提示选好影片库即可开始。</p>
       </div>
 
-      <p class="hero-meta">v0.1.0 · MIT License · <a href="https://github.com/tenngoxars/Kuraya" target="_blank" rel="noopener">GitHub ↗</a></p>
+      <p class="hero-meta">v{{VERSION}} · MIT License · <a href="https://github.com/tenngoxars/Kuraya" target="_blank" rel="noopener">GitHub ↗</a></p>
     </div>
   </section>
 
-  <!-- 壹 · 是什么 -->
-  <section class="sec fade" id="about" aria-labelledby="h-about">
-    <div class="sec-head">
-      <span class="vmark" aria-hidden="true">解題</span>
-      <p class="sec-no">壹</p>
-      <h2 class="sec-title" id="h-about">是什么</h2>
-      <p class="sec-lead">一部影片，从文件名到一面书架。Kuraya 自动识别番号、取回元数据与封面，按演员与番号归档成册，最后生成一页随时可开的片库。</p>
-    </div>
-    <div class="ledger">
-      <div class="row">
-        <span class="idx">01</span>
-        <div><h3>本地优先</h3><p>元数据、nfo 与海报全部落在本地，与影片文件同存。</p></div>
-      </div>
-      <div class="row">
-        <span class="idx">02</span>
-        <div><h3>纯离线片库页</h3><p>重建出的 index.html 不依赖任何服务，拷走即可浏览。</p></div>
-      </div>
-      <div class="row">
-        <span class="idx">03</span>
-        <div><h3>点击即播</h3><p>点封面即经 kuraya: 协议调起本机播放器，无需中转。</p></div>
-      </div>
-      <div class="row">
-        <span class="idx">04</span>
-        <div><h3>无框架测试</h3><p>自检与测试基于标准库，零第三方框架依赖。</p></div>
-      </div>
-      <div class="row">
-        <span class="idx">05</span>
-        <div><h3>三平台二进制</h3><p>macOS（Apple Silicon）· Windows · Linux 即装即用。</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 貳 · 工作流程 -->
-  <section class="sec fade" id="flow" aria-labelledby="h-flow">
-    <div class="sec-head">
-      <span class="vmark" aria-hidden="true">工序</span>
-      <p class="sec-no">貳</p>
-      <h2 class="sec-title" id="h-flow">工作流程</h2>
-      <p class="sec-lead">三道工序，从散乱到成册。把影片放进「待整理」目录，运行一次即可。</p>
-    </div>
-    <div class="steps">
-      <div class="step">
-        <p class="n">一</p>
-        <h3>识别</h3>
-        <p>从文件名识别番号，联网获取元数据与封面。</p>
-      </div>
-      <div class="step">
-        <p class="n">二</p>
-        <h3>归档</h3>
-        <p>按 演员名/番号 归档，生成 nfo 与海报。</p>
-      </div>
-      <div class="step">
-        <p class="n">三</p>
-        <h3>重建</h3>
-        <p>重建片库 index.html，可搜索、筛选、点击封面播放。</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- 參 · 片库预览：直接复刻真实产物（kuraya/web 静态版） -->
+  <!-- 壹 · 片库预览：直接复刻真实产物（kuraya/web 静态版） -->
   <section class="sec fade" id="preview" aria-labelledby="h-preview">
     <div class="sec-head">
-      <span class="vmark" aria-hidden="true">片藏</span>
-      <p class="sec-no">參</p>
-      <h2 class="sec-title" id="h-preview">片库预览</h2>
-      <p class="sec-lead">以下不是示意图——这就是重建出的 index.html 本身。一页纯离线 HTML，无服务、无追踪，只有你的收藏。</p>
+      <span class="vmark" aria-hidden="true" data-i18n="vmark.preview">片藏</span>
+      <p class="sec-no" data-i18n="sec.preview.no">壹</p>
+      <h2 class="sec-title" id="h-preview" data-i18n="sec.preview.title">本地片库</h2>
+      <p class="sec-lead" data-i18n="sec.preview.lead">一座片库，一个文件。本地保存，双击即开。</p>
     </div>
 
     <div class="lib">
@@ -443,9 +148,9 @@ pipx install .</pre>
           <span class="lib-eyebrow">Private Collection</span>
         </div>
         <div class="lib-stats">
-          <div><span class="num">100</span><span class="lbl">部影片</span></div>
-          <div><span class="num">12</span><span class="lbl">位演员</span></div>
-          <div><span class="num">8</span><span class="lbl">个厂商</span></div>
+          <div><span class="num">6</span><span class="lbl" data-i18n="stat.movies">部影片</span></div>
+          <div><span class="num">4</span><span class="lbl" data-i18n="stat.actress">位演员</span></div>
+          <div><span class="num">6</span><span class="lbl" data-i18n="stat.studio">个厂商</span></div>
         </div>
       </div>
 
@@ -453,146 +158,144 @@ pipx install .</pre>
       <div class="lib-toolbar">
         <div class="lib-search">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="text" placeholder="搜索演员 · 番号 · 厂商">
+          <input type="text" id="search" placeholder="搜索演员 · 番号 · 厂商" data-i18n-placeholder="search.placeholder">
+          <button type="button" class="clear-btn" id="clear-btn" data-i18n-aria="clear" aria-label="清空">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
         </div>
-        <select class="lib-sort" aria-label="排序方式">
-          <option>发行日期 · 新到旧</option>
-          <option>发行日期 · 旧到新</option>
-          <option>入库时间 · 新到旧</option>
-        </select>
-        <span class="lib-count">100 / 100</span>
+        <div class="select-wrap" id="sort-wrap">
+          <button type="button" class="select-btn" id="sort-btn" aria-haspopup="listbox" aria-expanded="false">
+            <span id="sort-label" data-i18n="sort.date_desc">发行日期 · 新到旧</span>
+            <svg class="chev" width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1l4 4 4-4"/></svg>
+          </button>
+          <div class="select-menu" id="sort-menu" role="listbox" aria-label="排序方式" data-i18n-aria="sort.by">
+            <button type="button" class="select-opt" role="option" aria-selected="true" data-value="date_desc" data-i18n="sort.date_desc">发行日期 · 新到旧</button>
+            <button type="button" class="select-opt" role="option" aria-selected="false" data-value="date_asc" data-i18n="sort.date_asc">发行日期 · 旧到新</button>
+            <button type="button" class="select-opt" role="option" aria-selected="false" data-value="added_desc" data-i18n="sort.added_desc">入库时间 · 新到旧</button>
+          </div>
+        </div>
+        <span class="lib-count">6 / 6</span>
       </div>
 
       <!-- 演员筛选 -->
       <div class="lib-chips">
-        <button type="button" class="lib-chip on">全部</button>
-        <button type="button" class="lib-chip">演员甲<span class="n">3</span></button>
-        <button type="button" class="lib-chip">演员乙<span class="n">2</span></button>
-        <button type="button" class="lib-chip">演员丙<span class="n">2</span></button>
+        <button type="button" class="lib-chip on" aria-pressed="true" data-i18n="chips.all">全部</button>
+        <button type="button" class="lib-chip" aria-pressed="false">花菱雫<span class="n">2</span></button>
+        <button type="button" class="lib-chip" aria-pressed="false">月見桜<span class="n">2</span></button>
+        <button type="button" class="lib-chip" aria-pressed="false">雪村凛<span class="n">1</span></button>
+        <button type="button" class="lib-chip" aria-pressed="false">朝霧遥<span class="n">1</span></button>
       </div>
 
       <!-- 卡片网格：封面为外部生成资产 covers/cover-N.png（2:3） -->
       <div class="lib-grid">
-        <a class="lib-card" href="#preview" style="animation-delay:0ms">
+        <a class="lib-card" href="#preview" data-date="2026-03-14" data-added="2026-03-16" style="animation-delay:0ms">
           <div class="lib-cover">
             <img src="covers/cover-1.png" loading="lazy" alt="">
             <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
           </div>
           <div class="lib-meta">
-            <div class="lib-code">KUR-001</div>
-            <div class="lib-actors">演员甲</div>
+            <div class="lib-code">SEIS-0314</div>
+            <div class="lib-actors">花菱雫</div>
             <div class="lib-sub"><span class="studio">星霜舍</span><span class="dot"></span><span class="date">2026-03-14 · 128min</span></div>
           </div>
         </a>
-        <a class="lib-card" href="#preview" style="animation-delay:22ms">
+        <a class="lib-card" href="#preview" data-date="2026-01-08" data-added="2026-01-10" style="animation-delay:22ms">
           <div class="lib-cover">
             <img src="covers/cover-2.png" loading="lazy" alt="">
             <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
           </div>
           <div class="lib-meta">
-            <div class="lib-code">ABC-123</div>
-            <div class="lib-actors">演员乙</div>
+            <div class="lib-code">SHID-0108</div>
+            <div class="lib-actors">月見桜</div>
             <div class="lib-sub"><span class="studio">紫電堂</span><span class="dot"></span><span class="date">2026-01-08 · 96min</span></div>
           </div>
         </a>
-        <a class="lib-card" href="#preview" style="animation-delay:44ms">
+        <a class="lib-card" href="#preview" data-date="2025-11-22" data-added="2025-11-25" style="animation-delay:44ms">
           <div class="lib-cover">
             <img src="covers/cover-3.png" loading="lazy" alt="">
             <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
           </div>
           <div class="lib-meta">
-            <div class="lib-code">MIS-042</div>
-            <div class="lib-actors">演员丙</div>
+            <div class="lib-code">BYAK-1122</div>
+            <div class="lib-actors">雪村凛</div>
             <div class="lib-sub"><span class="studio">白夜社</span><span class="dot"></span><span class="date">2025-11-22 · 143min</span></div>
           </div>
         </a>
-        <a class="lib-card" href="#preview" style="animation-delay:66ms">
+        <a class="lib-card" href="#preview" data-date="2026-02-02" data-added="2026-02-05" style="animation-delay:66ms">
           <div class="lib-cover">
             <img src="covers/cover-4.png" loading="lazy" alt="">
             <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
           </div>
           <div class="lib-meta">
-            <div class="lib-code">KUR-002</div>
-            <div class="lib-actors">演员丁</div>
+            <div class="lib-code">SEIR-0202</div>
+            <div class="lib-actors">朝霧遥</div>
             <div class="lib-sub"><span class="studio">青嵐舎</span><span class="dot"></span><span class="date">2026-02-02 · 112min</span></div>
           </div>
         </a>
-        <a class="lib-card" href="#preview" style="animation-delay:88ms">
+        <a class="lib-card" href="#preview" data-date="2025-09-30" data-added="2025-10-02" style="animation-delay:88ms">
           <div class="lib-cover">
             <img src="covers/cover-5.png" loading="lazy" alt="">
             <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
           </div>
           <div class="lib-meta">
-            <div class="lib-code">NEO-318</div>
-            <div class="lib-actors">演员甲</div>
-            <div class="lib-sub"><span class="studio">星霜舍</span><span class="dot"></span><span class="date">2025-09-30 · 88min</span></div>
+            <div class="lib-code">KOUY-0930</div>
+            <div class="lib-actors">花菱雫</div>
+            <div class="lib-sub"><span class="studio">紅葉館</span><span class="dot"></span><span class="date">2025-09-30 · 88min</span></div>
           </div>
         </a>
-        <a class="lib-card" href="#preview" style="animation-delay:110ms">
+        <a class="lib-card" href="#preview" data-date="2026-04-19" data-added="2026-04-21" style="animation-delay:110ms">
           <div class="lib-cover">
             <img src="covers/cover-6.png" loading="lazy" alt="">
             <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
           </div>
           <div class="lib-meta">
-            <div class="lib-code">XYZ-777</div>
-            <div class="lib-actors">演员乙</div>
-            <div class="lib-sub"><span class="studio">紫電堂</span><span class="dot"></span><span class="date">2026-04-19 · 121min</span></div>
+            <div class="lib-code">TOKA-0419</div>
+            <div class="lib-actors">月見桜</div>
+            <div class="lib-sub"><span class="studio">藤花舎</span><span class="dot"></span><span class="date">2026-04-19 · 121min</span></div>
           </div>
         </a>
       </div>
     </div>
 
-    <p class="preview-cap">点封面经 <b>kuraya:</b> 协议调起本机播放器——一册离线可读的影片目録。</p>
+    <p class="preview-cap" data-i18n="preview.cap">一册离线可读的影片目録，点封面即播。</p>
   </section>
 
   <!-- 肆 · 命令行速览 -->
   <section class="sec fade" id="cli" aria-labelledby="h-cli">
     <div class="sec-head">
-      <span class="vmark" aria-hidden="true">命令</span>
-      <p class="sec-no">肆</p>
-      <h2 class="sec-title" id="h-cli">命令行速览</h2>
-      <p class="sec-lead">双击运行进入菜单；也可用命令行，便于脚本与计划任务调用。</p>
+      <span class="vmark" aria-hidden="true" data-i18n="vmark.cli">命令</span>
+      <p class="sec-no" data-i18n="sec.cli.no">貳</p>
+      <h2 class="sec-title" id="h-cli" data-i18n="sec.cli.title">命令行速览</h2>
+      <p class="sec-lead" data-i18n="sec.cli.lead">双击 kuraya，剩下的交给它。</p>
     </div>
     <div class="term" aria-label="Kuraya 终端菜单示意">
-      <p><span class="t1">◈</span>  <span class="t2">K U R A Y A</span>  <span class="kanji" style="letter-spacing:.2em">蔵屋</span>  <span class="dim">v0.1.0</span></p>
+      <p><span class="t1">◈</span>  <span class="t2">K U R A Y A</span>  <span class="kanji" style="letter-spacing:.2em">蔵屋</span>  <span class="dim">v{{VERSION}}</span></p>
       <p class="rule">────────────────────────────────────────────────────────────</p>
-      <p><span class="dim">影片库</span>  <span class="path">D:\Media\Library</span>  <span class="dim">100 部</span></p>
-      <p><span class="dim">待整理</span>  <span class="path">D:\Media\Library\待整理</span>  <span class="dim">2 个文件</span></p>
+      <p><span class="dim" data-i18n="term.library">影片库</span>  <span class="path">D:\Media\Library</span>  <span class="dim" data-i18n="term.movies6">6 部</span></p>
+      <p><span class="dim" data-i18n="term.pending">待整理</span>  <span class="path">D:\Media\Library\待整理</span>  <span class="dim" data-i18n="term.files2">2 个文件</span></p>
       <p class="rule">────────────────────────────────────────────────────────────</p>
-      <p><span class="num">1</span>  刮削入库      处理待整理目录并归入片库</p>
-      <p><span class="num">2</span>  重建页面      重新扫描片库并生成 index.html</p>
-      <p><span class="num">3</span>  打开片库      在浏览器中查看</p>
-      <p><span class="num">4</span>  设置          影片库位置、待整理目录、播放器</p>
-      <p><span class="num">0</span>  退出</p>
+      <p><span class="num">1</span>  <span data-i18n="term.scrape">刮削入库</span>      <span data-i18n="term.scrape_desc">处理待整理目录并归入片库</span></p>
+      <p><span class="num">2</span>  <span data-i18n="term.rebuild">重建页面</span>      <span data-i18n="term.rebuild_desc">重新扫描片库并生成 index.html</span></p>
+      <p><span class="num">3</span>  <span data-i18n="term.open">打开片库</span>      <span data-i18n="term.open_desc">在浏览器中查看</span></p>
+      <p><span class="num">4</span>  <span data-i18n="term.settings">设置</span>          <span data-i18n="term.settings_desc">影片库位置、待整理目录、播放器</span></p>
+      <p><span class="num">0</span>  <span data-i18n="term.quit">退出</span></p>
     </div>
     <div class="ledger" style="margin-top:38px">
       <div class="row">
         <span class="idx">$</span>
-        <div><h3><span class="mono">kuraya</span></h3><p>完整流程：刮削 → 清理 → 重建页面。</p></div>
+        <div><h3><span class="mono">kuraya</span></h3><p data-i18n="ledger.full">完整流程：刮削 → 清理 → 重建页面。</p></div>
       </div>
       <div class="row">
         <span class="idx">$</span>
-        <div><h3><span class="mono">kuraya scrape --limit 3</span></h3><p>只刮削前 3 部，用于试跑。</p></div>
+        <div><h3><span class="mono">kuraya rebuild</span></h3><p data-i18n="ledger.rebuild">只重建片库页面。</p></div>
       </div>
       <div class="row">
         <span class="idx">$</span>
-        <div><h3><span class="mono">kuraya rebuild</span></h3><p>只重建片库页面。</p></div>
+        <div><h3><span class="mono">kuraya --dry-run</span></h3><p data-i18n="ledger.dryrun">预演，不改动任何文件。</p></div>
       </div>
       <div class="row">
         <span class="idx">$</span>
-        <div><h3><span class="mono">kuraya selftest</span></h3><p>核对数据源解析规则是否仍有效。</p></div>
-      </div>
-      <div class="row">
-        <span class="idx">$</span>
-        <div><h3><span class="mono">kuraya config</span></h3><p>查看配置。</p></div>
-      </div>
-      <div class="row">
-        <span class="idx">$</span>
-        <div><h3><span class="mono">kuraya --dry-run</span></h3><p>只显示将要处理的内容，不改动文件。</p></div>
-      </div>
-      <div class="row">
-        <span class="idx">$</span>
-        <div><h3><span class="mono">kuraya --quiet --yes</span></h3><p>精简输出、不等待按键，供计划任务使用。</p></div>
+        <div><h3><span class="mono">kuraya --quiet --yes</span></h3><p data-i18n="ledger.quiet">精简输出，免交互，适合计划任务。</p></div>
       </div>
     </div>
   </section>
@@ -602,96 +305,28 @@ pipx install .</pre>
 <!-- 落款 · 页脚 -->
 <footer class="fade">
   <div class="foot-in">
-    <p class="declare">
-      本工具仅用于整理用户<b>已合法持有</b>的本地影片文件，
-      不提供、不索引、不分发任何影片内容。
+    <p class="declare" data-i18n-html="legal.declare">
+      本工具仅整理用户<b>已合法持有</b>的本地影片，
+      不提供、不索引、不分发任何内容。
     </p>
-    <p class="declare-sub">使用者应遵守所在地区的法律法规，并自行承担使用过程中产生的一切责任。</p>
+    <p class="declare-sub" data-i18n="legal.sub">请遵守所在地区法律，使用责任自负。</p>
     <p class="foot-meta">
-      KURAYA 蔵屋 v0.1.0 · MIT License ·
+      KURAYA 蔵屋 v{{VERSION}} · MIT License ·
       <a href="https://github.com/tenngoxars/Kuraya" target="_blank" rel="noopener">github.com/tenngoxars/Kuraya ↗</a>
     </p>
   </div>
 </footer>
 
 <span class="sr-only" id="copy-live" aria-live="polite"></span>
-<script>
-(function(){
-  'use strict';
-  /* 复制区域：反馈「已复制」，1600ms 后复原 */
-  function announce(t){var live=document.getElementById('copy-live');if(live){live.textContent=t;}}
-  function copyText(t){
-    if(navigator.clipboard&&window.isSecureContext){return navigator.clipboard.writeText(t);}
-    return new Promise(function(res,rej){
-      var ta=document.createElement('textarea');
-      ta.value=t;ta.style.position='fixed';ta.style.opacity='0';
-      document.body.appendChild(ta);ta.select();
-      var ok=false;try{ok=document.execCommand('copy');}catch(e){}
-      document.body.removeChild(ta);
-      ok?res():rej(new Error('copy failed'));
-    });
-  }
-  document.querySelectorAll('.copy').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      var panel=document.getElementById(btn.getAttribute('data-target'));
-      var code=panel?panel.querySelector('pre').innerText:'';
-      copyText(code).then(function(){
-        btn.textContent='已复制';btn.classList.add('done');
-        announce('命令已复制');
-        clearTimeout(btn._t);
-        btn._t=setTimeout(function(){btn.textContent='复制';btn.classList.remove('done');},1600);
-      }).catch(function(){btn.textContent='复制失败';setTimeout(function(){btn.textContent='复制';},1600);});
-    });
-  });
 
-  /* 手引 tab：roving tabindex + 左右键切换 + 发丝指示线滑动 */
-  var tabs=Array.prototype.slice.call(document.querySelectorAll('[role=tab]'));
-  var panels=Array.prototype.slice.call(document.querySelectorAll('[role=tabpanel]'));
-  var list=document.getElementById('inst-tabs');
-  if(tabs.length&&list){
-    function moveIndicator(i){
-      var btn=tabs[i],lr=list.getBoundingClientRect(),br=btn.getBoundingClientRect();
-      list.style.setProperty('--tx',(br.left-lr.left+list.scrollLeft)+'px');
-      list.style.setProperty('--tw',br.width+'px');
-    }
-    function activate(i,focus){
-      tabs.forEach(function(t,j){
-        var on=j===i;
-        t.setAttribute('aria-selected',on?'true':'false');
-        t.tabIndex=on?0:-1;
-      });
-      panels.forEach(function(p,j){p.classList.toggle('active',j===i);});
-      moveIndicator(i);
-      if(focus){tabs[i].focus();}
-    }
-    tabs.forEach(function(t,i){
-      t.addEventListener('click',function(){activate(i,false);});
-      t.addEventListener('keydown',function(e){
-        var n;
-        if(e.key==='ArrowRight'){n=(i+1)%tabs.length;}
-        else if(e.key==='ArrowLeft'){n=(i-1+tabs.length)%tabs.length;}
-        else if(e.key==='Home'){n=0;}
-        else if(e.key==='End'){n=tabs.length-1;}
-        if(n!==undefined){e.preventDefault();activate(n,true);}
-      });
-    });
-    window.addEventListener('resize',function(){
-      var i=tabs.findIndex(function(t){return t.getAttribute('aria-selected')==='true';});
-      if(i>=0){moveIndicator(i);}
-    });
-    moveIndicator(0);
-  }
+<!-- 封面大图预览：演示区无影片文件，点击封面展示大图（替代「点封面即播」） -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="封面预览" data-i18n-aria="cover.preview" hidden>
+  <button type="button" class="lightbox-close" id="lightbox-close" data-i18n-aria="cover.close" aria-label="关闭">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+  <img id="lightbox-img" src="" alt="">
+</div>
 
-  /* 展卷支撑态：区块进入视口时淡入（IO 不可用时全部可见） */
-  if('IntersectionObserver' in window){
-    var io=new IntersectionObserver(function(es){
-      es.forEach(function(e){
-        if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}
-      });
-    },{threshold:.1});
-    document.querySelectorAll('.fade').forEach(function(el){io.observe(el);});
-  }
-})();
-</script>
+<script type="module" src="/src/main.js"></script>
 </body>
 </html>
