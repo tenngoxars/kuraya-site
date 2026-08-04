@@ -5,34 +5,21 @@ import { defineConfig } from 'vite';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/* 版本单一来源：主仓库 kuraya/__init__.py 的 __version__。
-   页面与终端一律不得硬编码版本号，统一经此注入。
-   解析顺序：KURAYA_VERSION 环境变量 > 主仓库 __init__.py > public/version.txt（托管平台构建兜底，
-   由 .github/workflows/sync-version.yml 在发版后自动同步）。主仓库缺失且无 version.txt 时构建报错。 */
+/* 版本单一来源：仓库内 public/version.txt。页面与终端一律不得硬编码版本号，
+   发版时手动更新该文件即可，构建/开发统一经此注入（KURAYA_VERSION 可临时覆盖）。 */
 function resolveVersion() {
   if (process.env.KURAYA_VERSION) return process.env.KURAYA_VERSION.trim();
-  const repo = process.env.KURAYA_REPO || path.resolve(__dirname, '../Kuraya');
-  const init = path.join(repo, 'kuraya', '__init__.py');
+  const file = path.resolve(__dirname, 'public', 'version.txt');
   try {
-    const src = readFileSync(init, 'utf8');
-    const m = src.match(/__version__\s*=\s*['"]([^'"]+)['"]/);
-    if (!m) throw new Error(`未在 ${init} 中找到 __version__`);
-    return m[1];
+    const v = readFileSync(file, 'utf8').trim();
+    if (!v) throw new Error('public/version.txt 为空');
+    return v;
   } catch (err) {
-    // 无主仓库（如 Cloudflare Pages 构建）：回退到仓库内 version.txt
-    const fallback = path.resolve(__dirname, 'public', 'version.txt');
-    try {
-      const v = readFileSync(fallback, 'utf8').trim();
-      if (v) return v;
-      throw new Error(`public/version.txt 为空`);
-    } catch (err2) {
-      throw new Error(
-        `无法确定 KURAYA 产品版本：${err.message}；${err2.message}\n` +
-          '版本单一来源为主仓库 kuraya/__init__.py（本地构建自动读取）。' +
-          '托管平台构建请依赖 public/version.txt（由 .github/workflows/sync-version.yml 维护），' +
-          '或设 KURAYA_REPO 指向主仓库，或用 KURAYA_VERSION 显式指定。'
-      );
-    }
+    throw new Error(
+      `无法确定 KURAYA 产品版本：${err.message}\n` +
+        '版本单一来源为 public/version.txt，发版时手动更新该文件。' +
+        '或用 KURAYA_VERSION 显式指定。'
+    );
   }
 }
 
