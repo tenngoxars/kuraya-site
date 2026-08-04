@@ -1,0 +1,33 @@
+# 同步安装脚本：从 Kuraya 主仓库拉取最新 install.sh / install.ps1。
+# 触发方式：手动运行（Actions → Run workflow）或每天定时检查。
+# 有变化才提交，Cloudflare Pages 检测到推送自动重新部署。
+name: 同步安装脚本
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 拉取最新安装脚本
+        run: |
+          curl -fsSL -o public/install.sh https://raw.githubusercontent.com/tenngoxars/Kuraya/main/install.sh
+          curl -fsSL -o public/install.ps1 https://raw.githubusercontent.com/tenngoxars/Kuraya/main/install.ps1
+      - name: 有变化才提交
+        run: |
+          if git diff --quiet public/install.sh public/install.ps1; then
+            echo "脚本无变化，跳过"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "actions@github.com"
+            git add public/install.sh public/install.ps1
+            git commit -m "同步安装脚本"
+            git push
+          fi
