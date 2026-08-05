@@ -6,6 +6,11 @@
 <title>KURAYA 蔵屋 — JAV 影片刮削与编目工具</title>
 <meta name="description" content="KURAYA 蔵屋是一款本地优先的 JAV 影片刮削与编目工具。自动整理封面与元数据，生成无需服务器、可离线浏览的私人片库。支持 macOS、Windows 与 Linux，MIT 开源。">
 <link rel="canonical" href="https://kuraya.app/">
+<!-- 三语静态页：/ 简中 · /zh-TW/ 繁中 · /en/ 英文（构建时由 scripts/build-i18n-pages.mjs 生成副本） -->
+<link rel="alternate" hreflang="zh-CN" href="https://kuraya.app/">
+<link rel="alternate" hreflang="zh-TW" href="https://kuraya.app/zh-TW/">
+<link rel="alternate" hreflang="en" href="https://kuraya.app/en/">
+<link rel="alternate" hreflang="x-default" href="https://kuraya.app/">
 <meta name="theme-color" content="#08090b">
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -23,6 +28,24 @@
 <meta name="twitter:title" content="KURAYA 蔵屋 — JAV 影片刮削与编目工具">
 <meta name="twitter:description" content="让散落的影片各归其位。自动整理封面与元数据，生成可离线浏览的私人片库。">
 <meta name="twitter:image" content="https://kuraya.app/og.jpg">
+<!-- 结构化数据：软件类富结果。description 与 url/inLanguage 在构建副本页时按语言替换 -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "KURAYA 蔵屋",
+  "alternateName": "Kuraya — JAV 影片刮削与编目工具",
+  "description": "KURAYA 蔵屋是一款本地优先的 JAV 影片刮削与编目工具。自动整理封面与元数据，生成无需服务器、可离线浏览的私人片库。支持 macOS、Windows 与 Linux，MIT 开源。",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "macOS, Windows, Linux",
+  "softwareVersion": "{{VERSION}}",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "url": "https://kuraya.app/",
+  "inLanguage": "zh-CN",
+  "image": "https://kuraya.app/og.jpg",
+  "sameAs": ["https://github.com/tenngoxars/Kuraya"]
+}
+</script>
 <!-- 内联 SVG favicon：片库家纹（金圆环菱格，海鼠壁纹样，与 kuraya/web 一致） -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%230d0e11'/%3E%3Cg fill='none' stroke='%23c9a227' stroke-width='1.1' stroke-linejoin='miter'%3E%3Ccircle cx='12' cy='12' r='9.2' opacity='.45'/%3E%3Cpath d='M12 3.8L20.2 12 12 20.2 3.8 12z'/%3E%3Cpath d='M12 9.2l2.8 2.8-2.8 2.8-2.8-2.8z' fill='%23c9a227' stroke='none'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">

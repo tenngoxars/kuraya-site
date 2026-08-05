@@ -16,6 +16,8 @@ public/covers/      # 片库预览封面 cover-1..6.webp（2:3，900x1350，WebP
 public/og.jpg       # 社交分享图 1200x630（生成方式见「社交分享图」）
 public/apple-touch-icon.png  # iOS 主屏图标 180x180（家纹，与 favicon 同源）
 vite.config.js      # base './'；版本注入：{{VERSION}} 占位 + __KURAYA_VERSION__ define
+scripts/build-i18n-pages.mjs  # 三语静态页生成：vite build 后跑，产出 dist/zh-TW/ 与 dist/en/
+public/robots.txt / sitemap.xml  # 爬虫控制与三语 URL 站点地图
 ```
 
 ## 关键约定
@@ -57,6 +59,7 @@ vite.config.js      # base './'；版本注入：{{VERSION}} 占位 + __KURAYA_V
 - **移动端页眉**：导航在窄屏必须保留（原来 `≤760px` 整个 `display:none`，安装入口在手机上彻底消失）。让位顺序是：`≤820px` 收起版本号（hero-meta 与页脚各有一处，页眉可省）→ `≤470px` 把词标 `.brand-name` 做成视觉隐藏（保留无障碍名，不能用 `display:none`），只留家纹。
 
 - **社交分享图**：`public/og.jpg`（1200×630）用站点自身的调色与字体渲染后截图导出，`og:image` / `twitter:image` 走绝对 URL，`twitter:card` 为 `summary_large_image`。改动 hero 视觉时一并重出，否则分享预览会和站点脱节。
+- **SEO 与三语静态页**：构建（`npm run build`）在 `vite build` 后由 `scripts/build-i18n-pages.mjs` 生成 `dist/zh-TW/index.html` 与 `dist/en/index.html`，让繁/英内容以独立 URL 被搜索引擎索引（运行时切换只对 JS 用户可见）。主页 head 带三语 `hreflang`（`x-default` 指向 `/`）、`robots.txt` 与 `sitemap.xml`（public/，URL 写死 `https://kuraya.app/`），以及 `SoftwareApplication` JSON-LD（`{{VERSION}}` 占位注入版本）。**脚本三条铁律**：① 键值替换按原文长度降序（「影片库」是「影片库位置…」的子串，必须先长后短），用 `split/join` 而非 `replace` 防 `$` 转义；② 副本页的相对资源（`./assets/`、`apple-touch-icon.png`、`covers/` 含 `srcset`）必须回退一级为 `../`，漏一条就是整页图片 404；③ 单独替换 `html lang`、canonical / `og:url` / JSON-LD `url` 与 `inLanguage`、`og:locale`。新增页面文案时必须三语词条齐全（词典是脚本的翻译来源），并重新构建验证副本页无简体残留。
 - **文案语域**：现代高级感方向——白话、克制、短句、有留白与意象（如「一座片库，一个文件」）；**不用文言虚词**（之/乃/既毕/择定/宜于等）；保留产品术语（kuraya、nfo、番号、刮削）与功能信息；法律声明保持清晰直白；终端示意与片库复刻区为「真实产物」，文案勿改。
 - **部署**：canonical / `og:url` / `og:image` / `twitter:image` 均为 `https://kuraya.app/` 绝对 URL（域名由页内安装命令 `https://kuraya.app/install.sh` 佐证）。原先 canonical 上的 `vite-ignore` 是给相对占位值 `index.html` 挡 Vite 资源解析用的，改成绝对 URL 后已不需要，勿再加回。构建仍是 `base: './'`，页面资源可托管于任意子路径。
 
