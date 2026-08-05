@@ -19,5 +19,6 @@ npm run preview  # 本地预览 dist/ 产物
 ## 工程约束
 
 - 页面主体结构见 `.agentdocs/index.md` 与 `.agentdocs/frontend/architecture.md`，修改前必读。
-- 封面图片放 `public/covers/`，命名 `cover-N.png`（2:3），HTML 中直接以相对路径引用。
-- 部署地址未定，`base: './'` 相对路径构建，可托管于任意子路径；`<link rel="canonical">` 与 `og:url` 为占位，上线前替换为绝对 URL（canonical 上的 `vite-ignore` 防止 Vite 误将其当作资源处理，勿删）。
+- 封面图片放 `public/covers/`，命名 `cover-N.webp`（2:3，900×1350），并一并生成 `cover-N-400.webp` / `cover-N-640.webp` 与内联 LQIP；HTML 中以相对路径引用，`srcset`/`sizes` 见 architecture.md。
+- `base: './'` 相对路径构建，页面资源可托管于任意子路径；canonical / OG / Twitter 的 URL 为 `https://kuraya.app/` 绝对地址（社交平台不接受相对 URL）。
+- 终端与「乱→齐」区块的对齐缩进一律用 CSS，禁止用空格字符补位——HTML 正常空白折叠会把连续空格压成一个。

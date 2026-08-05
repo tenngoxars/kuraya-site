@@ -4,24 +4,38 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KURAYA 蔵屋 — JAV 影片刮削与编目工具</title>
-<meta name="description" content="KURAYA 蔵屋 —— JAV 影片刮削与编目工具：把散落的 JAV 影片文件整理成带封面与元数据的有序收藏，并生成离线可读的片库页面。macOS / Windows / Linux 一行命令安装，MIT 许可。">
-<link rel="canonical" href="index.html" vite-ignore><!-- 部署地址未定：上线前替换为绝对 URL -->
+<meta name="description" content="KURAYA 蔵屋是一款本地优先的 JAV 影片刮削与编目工具。自动整理封面与元数据，生成无需服务器、可离线浏览的私人片库。支持 macOS、Windows 与 Linux，MIT 开源。">
+<link rel="canonical" href="https://kuraya.app/">
 <meta name="theme-color" content="#08090b">
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="KURAYA 蔵屋">
 <meta property="og:title" content="KURAYA 蔵屋 — JAV 影片刮削与编目工具">
-<meta property="og:description" content="将散落的 JAV 影片文件整理成带封面与元数据的有序收藏，生成离线可读的片库页面。本地优先，MIT 许可。">
-<meta property="og:url" content="index.html"><!-- 同上：上线前替换为绝对 URL -->
+<meta property="og:description" content="让散落的影片各归其位。自动整理封面与元数据，生成可离线浏览的私人片库。">
+<meta property="og:url" content="https://kuraya.app/">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kuraya.app/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="KURAYA 蔵屋 — 让散落的影片，各归其位。">
 <!-- Twitter Card -->
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="KURAYA 蔵屋 — JAV 影片刮削与编目工具">
-<meta name="twitter:description" content="将散落的 JAV 影片文件整理成带封面与元数据的有序收藏，生成离线可读的片库页面。">
+<meta name="twitter:description" content="让散落的影片各归其位。自动整理封面与元数据，生成可离线浏览的私人片库。">
+<meta name="twitter:image" content="https://kuraya.app/og.jpg">
 <!-- 内联 SVG favicon：片库家纹（金圆环菱格，海鼠壁纹样，与 kuraya/web 一致） -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%230d0e11'/%3E%3Cg fill='none' stroke='%23c9a227' stroke-width='1.1' stroke-linejoin='miter'%3E%3Ccircle cx='12' cy='12' r='9.2' opacity='.45'/%3E%3Cpath d='M12 3.8L20.2 12 12 20.2 3.8 12z'/%3E%3Cpath d='M12 9.2l2.8 2.8-2.8 2.8-2.8-2.8z' fill='%23c9a227' stroke='none'/%3E%3C/g%3E%3C/svg%3E">
-<!-- 渐进增强开关：JS 可用才启用动效（无 JS 时内容完整可见） -->
-<script>if('IntersectionObserver' in window){document.documentElement.classList.add('js')}</script>
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- 渐进增强开关：JS 可用才启用动效（无 JS 时内容完整可见）。
+     .type 在字体就绪（或 900ms 兜底）后加：hero 编排的起始态是 opacity:0，
+     不门控的话会先用回退字体演一遍，字体到位后巨大的「蔵屋」再跳一次。
+     字体样式表必须保持渲染阻塞——非阻塞加载时 @font-face 尚未解析，
+     document.fonts.ready 会立刻兑现，门控就失效了。 -->
+<script>if('IntersectionObserver' in window){
+var d=document.documentElement;d.classList.add('js');
+var go=function(){d.classList.add('type')};
+if(document.fonts&&document.fonts.ready){var t=setTimeout(go,900);document.fonts.ready.then(function(){clearTimeout(t);go()})}else{go()}
+}</script>
 <!-- 字体：Cormorant Garamond（拉丁展示）/ Noto Serif SC（细明朝，300/400/500）/ IBM Plex Mono（仅代码） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,9 +53,10 @@
       <span class="brand-mark" aria-hidden="true">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/><path d="M12 3.8L20.2 12 12 20.2 3.8 12z"/><path class="mark-core" d="M12 9.2l2.8 2.8-2.8 2.8-2.8-2.8z"/></svg>
       </span>
-      KURAYA 蔵屋
+      <span class="brand-name">KURAYA 蔵屋</span>
     </a>
     <nav aria-label="章节导航" data-i18n-aria="nav.aria">
+      <a href="#order" data-i18n="nav.order">整理</a>
       <a href="#preview" data-i18n="nav.preview">片库</a>
       <a href="#cli" data-i18n="nav.cli">命令</a>
       <a href="#install" data-i18n="nav.install">安装</a>
@@ -70,7 +85,7 @@
           <span class="ja"><span class="ch">蔵</span><span class="ch">屋</span></span>
         </h1>
       </div>
-      <p class="hero-lead" data-i18n-html="hero.lead">将散落的 JAV 影片，整理成一座带封面与元数据的片库，<b>离线也能从容欣赏</b>。</p>
+      <p class="hero-lead" data-i18n-html="hero.lead"><b>让散落的影片，各归其位。</b><br>自动整理封面与元数据，生成一座可离线浏览的私人片库。</p>
 
       <div class="hero-rule" aria-hidden="true"></div>
 
@@ -119,20 +134,53 @@
             </div>
           </div>
         </div>
-        <p class="inst-note" id="inst-note">装好后运行 <span class="mono">Kuraya</span>，按提示选好影片库即可开始。</p>
+        <p class="inst-note" id="inst-note">运行 <span class="mono">Kuraya</span>，选定影片库，整理即可开始。</p>
       </div>
 
       <p class="hero-meta">v{{VERSION}} · MIT License · <a href="https://github.com/tenngoxars/Kuraya" target="_blank" rel="noopener">GitHub ↗</a></p>
     </div>
   </section>
 
-  <!-- 壹 · 片库预览：直接复刻真实产物（kuraya/web 静态版） -->
+  <!-- 壹 · 乱 → 齐：左边是待整理目录的原始文件名，右边是归档后的样子 -->
+  <section class="sec fade" id="order" aria-labelledby="h-order">
+    <div class="sec-head">
+      <span class="vmark" aria-hidden="true" data-i18n="vmark.order">归位</span>
+      <p class="sec-no" data-i18n="sec.order.no">壹</p>
+      <h2 class="sec-title" id="h-order" data-i18n="sec.order.title">从一堆文件，到一座片库</h2>
+      <p class="sec-lead" data-i18n="sec.order.lead">原始文件名各写各的。刮削一次，番号、演员、厂商、封面各就各位。</p>
+    </div>
+    <div class="order">
+      <div class="order-col">
+        <p class="order-cap" data-i18n="order.before">整理前 · 待整理</p>
+        <ul class="order-list mess">
+          <li>花菱雫.SEIS-0314.1080p.XXX.mkv</li>
+          <li>[新片]月見桜_SHID-0108_最终修正版.mkv</li>
+          <li>BYAK1122 雪村凛 hd.mp4</li>
+          <li>未命名_20250930_01.mkv</li>
+        </ul>
+      </div>
+      <div class="order-arrow" aria-hidden="true"></div>
+      <div class="order-col">
+        <p class="order-cap" data-i18n="order.after">整理后 · 影片库</p>
+        <ul class="order-list tidy">
+          <li class="dir" data-i18n="order.root">影片库/</li>
+          <li class="dir d1">└ 花菱雫/</li>
+          <li class="dir d2">└ SEIS-0314/</li>
+          <li class="d3">├ SEIS-0314.mkv</li>
+          <li class="d3">├ poster.jpg · fanart.jpg</li>
+          <li class="d3">└ movie.nfo</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 貳 · 片库预览：直接复刻真实产物（kuraya/web 静态版） -->
   <section class="sec fade" id="preview" aria-labelledby="h-preview">
     <div class="sec-head">
       <span class="vmark" aria-hidden="true" data-i18n="vmark.preview">片藏</span>
-      <p class="sec-no" data-i18n="sec.preview.no">壹</p>
-      <h2 class="sec-title" id="h-preview" data-i18n="sec.preview.title">本地片库</h2>
-      <p class="sec-lead" data-i18n="sec.preview.lead">一座片库，一个文件。本地保存，双击即开。</p>
+      <p class="sec-no" data-i18n="sec.preview.no">貳</p>
+      <h2 class="sec-title" id="h-preview" data-i18n="sec.preview.title">私人片库</h2>
+      <p class="sec-lead" data-i18n="sec.preview.lead">一座片库，一个文件。无需服务，双击即开。</p>
     </div>
 
     <div class="lib">
@@ -186,116 +234,119 @@
         <button type="button" class="lib-chip" aria-pressed="false">朝霧遥<span class="n">1</span></button>
       </div>
 
-      <!-- 卡片网格：封面为外部生成资产 covers/cover-N.webp（2:3，900x1350） -->
+      <!-- 卡片网格：封面为外部生成资产 covers/cover-N.webp（2:3，900x1350）
+           srcset 320/640/900：桌面渲染宽约 276px、移动端约 158px，直上 900w 是三倍过采样。
+           --lqip 是 16px 宽的模糊底图，图片就位前先占住色调 -->
       <div class="lib-grid">
-        <a class="lib-card" href="#preview" data-date="2026-03-14" data-added="2026-03-16" style="animation-delay:0ms">
-          <div class="lib-cover">
-            <img src="covers/cover-1.webp" loading="lazy" alt="">
-            <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
-          </div>
-          <div class="lib-meta">
-            <div class="lib-code">SEIS-0314</div>
-            <div class="lib-actors">花菱雫</div>
-            <div class="lib-sub"><span class="studio">星霜舍</span><span class="dot"></span><span class="date">2026-03-14 · 128min</span></div>
-          </div>
-        </a>
-        <a class="lib-card" href="#preview" data-date="2026-01-08" data-added="2026-01-10" style="animation-delay:22ms">
-          <div class="lib-cover">
-            <img src="covers/cover-2.webp" loading="lazy" alt="">
-            <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
-          </div>
-          <div class="lib-meta">
-            <div class="lib-code">SHID-0108</div>
-            <div class="lib-actors">月見桜</div>
-            <div class="lib-sub"><span class="studio">紫電堂</span><span class="dot"></span><span class="date">2026-01-08 · 96min</span></div>
-          </div>
-        </a>
-        <a class="lib-card" href="#preview" data-date="2025-11-22" data-added="2025-11-25" style="animation-delay:44ms">
-          <div class="lib-cover">
-            <img src="covers/cover-3.webp" loading="lazy" alt="">
-            <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
-          </div>
-          <div class="lib-meta">
-            <div class="lib-code">BYAK-1122</div>
-            <div class="lib-actors">雪村凛</div>
-            <div class="lib-sub"><span class="studio">白夜社</span><span class="dot"></span><span class="date">2025-11-22 · 143min</span></div>
-          </div>
-        </a>
-        <a class="lib-card" href="#preview" data-date="2026-02-02" data-added="2026-02-05" style="animation-delay:66ms">
-          <div class="lib-cover">
-            <img src="covers/cover-4.webp" loading="lazy" alt="">
-            <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
-          </div>
-          <div class="lib-meta">
-            <div class="lib-code">SEIR-0202</div>
-            <div class="lib-actors">朝霧遥</div>
-            <div class="lib-sub"><span class="studio">青嵐舎</span><span class="dot"></span><span class="date">2026-02-02 · 112min</span></div>
-          </div>
-        </a>
-        <a class="lib-card" href="#preview" data-date="2025-09-30" data-added="2025-10-02" style="animation-delay:88ms">
-          <div class="lib-cover">
-            <img src="covers/cover-5.webp" loading="lazy" alt="">
-            <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
-          </div>
-          <div class="lib-meta">
-            <div class="lib-code">KOUY-0930</div>
-            <div class="lib-actors">花菱雫</div>
-            <div class="lib-sub"><span class="studio">紅葉館</span><span class="dot"></span><span class="date">2025-09-30 · 88min</span></div>
-          </div>
-        </a>
-        <a class="lib-card" href="#preview" data-date="2026-04-19" data-added="2026-04-21" style="animation-delay:110ms">
-          <div class="lib-cover">
-            <img src="covers/cover-6.webp" loading="lazy" alt="">
-            <div class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></div>
-          </div>
-          <div class="lib-meta">
-            <div class="lib-code">TOKA-0419</div>
-            <div class="lib-actors">月見桜</div>
-            <div class="lib-sub"><span class="studio">藤花舎</span><span class="dot"></span><span class="date">2026-04-19 · 121min</span></div>
-          </div>
-        </a>
+        <button type="button" class="lib-card" aria-haspopup="dialog" data-date="2026-03-14" data-added="2026-03-16" style="animation-delay:0ms">
+          <span class="lib-cover" style="--lqip:url(data:image/webp;base64,UklGRowAAABXRUJQVlA4IIAAAACwBACdASoQABgAPulkq04pJaQiMAgBIB0JZgCdMoMjbEnJtF6Jg954RTLUT7wYAP7sOfmRpSWoTVRqHnbf5+kv+BJcTxdGe5MuTfVogSFNp3uxTu46E5c5GjzxEaHzOTTSgQ4qqHC99DQ7BVBsmGo7wQ+NG1uVrdSZZRWTRYwsAA==)">
+            <img src="covers/cover-1.webp" srcset="covers/cover-1-400.webp 400w, covers/cover-1-640.webp 640w, covers/cover-1.webp 900w" sizes="(max-width:968px) 43vw, 260px" width="900" height="1350" loading="lazy" decoding="async" alt="">
+            <span class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></span>
+          </span>
+          <span class="lib-meta">
+            <span class="lib-code">SEIS-0314</span>
+            <span class="lib-actors">花菱雫</span>
+            <span class="lib-sub"><span class="studio">星霜舍</span><span class="dot"></span><span class="date">2026-03-14 · 128min</span></span>
+          </span>
+        </button>
+        <button type="button" class="lib-card" aria-haspopup="dialog" data-date="2026-01-08" data-added="2026-01-10" style="animation-delay:22ms">
+          <span class="lib-cover" style="--lqip:url(data:image/webp;base64,UklGRooAAABXRUJQVlA4IH4AAADwAwCdASoQABgAPulgqE2pJaQiMAgBIB0JYwCsABQzxwm7QhKN+NAAAP7PVtPjoAQW0texEEpIIqkwDT1SG74/mZIHWXGJSU9CYKnTG62wLkobmFAeCzdQwXPoPK62Vu9tRdWJyPm1Hsi8fVOrcVe8LX3YQUodIL7FgIkAAAA=)">
+            <img src="covers/cover-2.webp" srcset="covers/cover-2-400.webp 400w, covers/cover-2-640.webp 640w, covers/cover-2.webp 900w" sizes="(max-width:968px) 43vw, 260px" width="900" height="1350" loading="lazy" decoding="async" alt="">
+            <span class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></span>
+          </span>
+          <span class="lib-meta">
+            <span class="lib-code">SHID-0108</span>
+            <span class="lib-actors">月見桜</span>
+            <span class="lib-sub"><span class="studio">紫電堂</span><span class="dot"></span><span class="date">2026-01-08 · 96min</span></span>
+          </span>
+        </button>
+        <button type="button" class="lib-card" aria-haspopup="dialog" data-date="2025-11-22" data-added="2025-11-25" style="animation-delay:44ms">
+          <span class="lib-cover" style="--lqip:url(data:image/webp;base64,UklGRpYAAABXRUJQVlA4IIoAAAAwBACdASoQABgAPulgqE0pJaOiMAgBIB0JYgCdMoADU1uXEy6F47VVgoAA/uv1oQddOG3mFMhQdJz5X5buJnV7pAOkC6L7TxsIHZ2pmDyXmgGlcAELG+uEVXuOec3Rxw4PXTqyifWBdvzEs9lZSCxdLwexpoXBgBbmxmhHbbajs4bW4sLVUzAhAAA=)">
+            <img src="covers/cover-3.webp" srcset="covers/cover-3-400.webp 400w, covers/cover-3-640.webp 640w, covers/cover-3.webp 900w" sizes="(max-width:968px) 43vw, 260px" width="900" height="1350" loading="lazy" decoding="async" alt="">
+            <span class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></span>
+          </span>
+          <span class="lib-meta">
+            <span class="lib-code">BYAK-1122</span>
+            <span class="lib-actors">雪村凛</span>
+            <span class="lib-sub"><span class="studio">白夜社</span><span class="dot"></span><span class="date">2025-11-22 · 143min</span></span>
+          </span>
+        </button>
+        <button type="button" class="lib-card" aria-haspopup="dialog" data-date="2026-02-02" data-added="2026-02-05" style="animation-delay:66ms">
+          <span class="lib-cover" style="--lqip:url(data:image/webp;base64,UklGRn4AAABXRUJQVlA4IHIAAADwAwCdASoQABgAPulgqE2pJaQiMAgBIB0JQBadA3PQWs+T57wgSlCAAP0Bs2W89PEGakBxHqzmK0k+jaYFXG27ZY1rsexmNbImrjtPPto/kUX+53AWCiZrBMwH1DX8O8uxwNA/JocgRyNM8sSj1FcAAAA=)">
+            <img src="covers/cover-4.webp" srcset="covers/cover-4-400.webp 400w, covers/cover-4-640.webp 640w, covers/cover-4.webp 900w" sizes="(max-width:968px) 43vw, 260px" width="900" height="1350" loading="lazy" decoding="async" alt="">
+            <span class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></span>
+          </span>
+          <span class="lib-meta">
+            <span class="lib-code">SEIR-0202</span>
+            <span class="lib-actors">朝霧遥</span>
+            <span class="lib-sub"><span class="studio">青嵐舎</span><span class="dot"></span><span class="date">2026-02-02 · 112min</span></span>
+          </span>
+        </button>
+        <button type="button" class="lib-card" aria-haspopup="dialog" data-date="2025-09-30" data-added="2025-10-02" style="animation-delay:88ms">
+          <span class="lib-cover" style="--lqip:url(data:image/webp;base64,UklGRpoAAABXRUJQVlA4II4AAAAQBACdASoQABgAPulgqE0pJaQiMAgBIB0JZACsAB7H4womBn4wBPoUIAD+rbD9prf2QvOZQU/APNSBPlrI6MyzWuRrrgVTfPKFXXkC/51hkmtbQnq8ngkLahf1xj3etVUiujCdLH9oz3R0TzBgzTz2pajaHSR7gMTdArThmkQV+y/+fIMZJXfGgeFRhIAA)">
+            <img src="covers/cover-5.webp" srcset="covers/cover-5-400.webp 400w, covers/cover-5-640.webp 640w, covers/cover-5.webp 900w" sizes="(max-width:968px) 43vw, 260px" width="900" height="1350" loading="lazy" decoding="async" alt="">
+            <span class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></span>
+          </span>
+          <span class="lib-meta">
+            <span class="lib-code">KOUY-0930</span>
+            <span class="lib-actors">花菱雫</span>
+            <span class="lib-sub"><span class="studio">紅葉館</span><span class="dot"></span><span class="date">2025-09-30 · 88min</span></span>
+          </span>
+        </button>
+        <button type="button" class="lib-card" aria-haspopup="dialog" data-date="2026-04-19" data-added="2026-04-21" style="animation-delay:110ms">
+          <span class="lib-cover" style="--lqip:url(data:image/webp;base64,UklGRpgAAABXRUJQVlA4IIwAAACQBACdASoQABgAPuleqE0pJSQiMAgBIB0JQBOmUABYOOMBrmMg74Z4PFT37gAA/u7eff3k35I9CsTMg7ENu0pd0WZg7QuuBbT4MXBIHyE+fB6zPRBTrb9QU1Isi23yI76YMopPvWAXJPJWPvUXcBY+sqOmBTSmOTy7825wdYt6csHxBqShXIWApAAAAA==)">
+            <img src="covers/cover-6.webp" srcset="covers/cover-6-400.webp 400w, covers/cover-6-640.webp 640w, covers/cover-6.webp 900w" sizes="(max-width:968px) 43vw, 260px" width="900" height="1350" loading="lazy" decoding="async" alt="">
+            <span class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></span>
+          </span>
+          <span class="lib-meta">
+            <span class="lib-code">TOKA-0419</span>
+            <span class="lib-actors">月見桜</span>
+            <span class="lib-sub"><span class="studio">藤花舎</span><span class="dot"></span><span class="date">2026-04-19 · 121min</span></span>
+          </span>
+        </button>
       </div>
     </div>
 
-    <p class="preview-cap" data-i18n="preview.cap">一册离线可读的影片目録，点封面即播。</p>
+    <p class="preview-cap" data-i18n="preview.cap">封面、演员、番号与厂商井然归档。点开封面，即可播放。</p>
   </section>
 
-  <!-- 肆 · 命令行速览 -->
+  <!-- 叁 · 命令行速览。终端排版一律走 CSS（HTML 空白折叠会吃掉字符补位的对齐） -->
   <section class="sec fade" id="cli" aria-labelledby="h-cli">
     <div class="sec-head">
       <span class="vmark" aria-hidden="true" data-i18n="vmark.cli">命令</span>
-      <p class="sec-no" data-i18n="sec.cli.no">貳</p>
-      <h2 class="sec-title" id="h-cli" data-i18n="sec.cli.title">命令行速览</h2>
-      <p class="sec-lead" data-i18n="sec.cli.lead">双击 kuraya，剩下的交给它。</p>
+      <p class="sec-no" data-i18n="sec.cli.no">叁</p>
+      <h2 class="sec-title" id="h-cli" data-i18n="sec.cli.title">一次运行，完成整理</h2>
+      <p class="sec-lead" data-i18n="sec.cli.lead">刮削、归档、清理、重建页面，按顺序自动完成。</p>
     </div>
     <div class="term" aria-label="Kuraya 终端菜单示意">
-      <p><span class="t1">◈</span>  <span class="t2">K U R A Y A</span>  <span class="kanji" style="letter-spacing:.2em">蔵屋</span>  <span class="dim">v{{VERSION}}</span></p>
-      <p class="rule">────────────────────────────────────────────────────────────</p>
-      <p><span class="dim" data-i18n="term.library">影片库</span>  <span class="path">D:\Media\Library</span>  <span class="dim" data-i18n="term.movies6">6 部</span></p>
-      <p><span class="dim" data-i18n="term.pending">待整理</span>  <span class="path">D:\Media\Library\待整理</span>  <span class="dim" data-i18n="term.files2">2 个文件</span></p>
-      <p class="rule">────────────────────────────────────────────────────────────</p>
-      <p><span class="num">1</span>  <span data-i18n="term.scrape">刮削入库</span>      <span data-i18n="term.scrape_desc">处理待整理目录并归入片库</span></p>
-      <p><span class="num">2</span>  <span data-i18n="term.rebuild">重建页面</span>      <span data-i18n="term.rebuild_desc">重新扫描片库并生成 index.html</span></p>
-      <p><span class="num">3</span>  <span data-i18n="term.open">打开片库</span>      <span data-i18n="term.open_desc">在浏览器中查看</span></p>
-      <p><span class="num">4</span>  <span data-i18n="term.settings">设置</span>          <span data-i18n="term.settings_desc">影片库位置、待整理目录、播放器</span></p>
-      <p><span class="num">0</span>  <span data-i18n="term.quit">退出</span></p>
+      <p><span class="t1">◈</span><span class="t2">K U R A Y A</span><span class="kanji">蔵屋</span><span class="dim r">v{{VERSION}}</span></p>
+      <p class="rule"></p>
+      <p><span class="dim c" data-i18n="term.library">影片库</span><span class="path">D:\Media\Library</span><span class="dim r" data-i18n="term.movies6">6 部</span></p>
+      <p><span class="dim c" data-i18n="term.pending">待整理</span><span class="path">D:\Media\Library\待整理</span><span class="dim r" data-i18n="term.files2">2 个文件</span></p>
+      <p class="rule"></p>
+      <p><span class="num">1</span><span class="c-menu" data-i18n="term.scrape">刮削入库</span><span data-i18n="term.scrape_desc">处理待整理目录并归入片库</span></p>
+      <p><span class="num">2</span><span class="c-menu" data-i18n="term.rebuild">重建页面</span><span data-i18n="term.rebuild_desc">重新扫描片库并生成 index.html</span></p>
+      <p><span class="num">3</span><span class="c-menu" data-i18n="term.open">打开片库</span><span data-i18n="term.open_desc">在浏览器中查看</span></p>
+      <p><span class="num">4</span><span class="c-menu" data-i18n="term.settings">设置</span><span data-i18n="term.settings_desc">影片库位置、待整理目录、播放器</span></p>
+      <p><span class="num">5</span><span class="c-menu" data-i18n="term.update">更新</span><span data-i18n="term.update_desc">检查并安装新版本</span></p>
+      <p><span class="num">0</span><span class="c-menu" data-i18n="term.quit">退出</span></p>
     </div>
-    <div class="ledger" style="margin-top:38px">
+    <div class="ledger">
       <div class="row">
         <span class="idx">$</span>
-        <div><h3><span class="mono">kuraya</span></h3><p data-i18n="ledger.full">完整流程：刮削 → 清理 → 重建页面。</p></div>
+        <div><h3><span class="mono">kuraya</span></h3><p data-i18n="ledger.full">进入交互菜单，一键完成全量整理。</p></div>
       </div>
       <div class="row">
         <span class="idx">$</span>
-        <div><h3><span class="mono">kuraya rebuild</span></h3><p data-i18n="ledger.rebuild">只重建片库页面。</p></div>
+        <div><h3><span class="mono">kuraya rebuild</span></h3><p data-i18n="ledger.rebuild">重新扫描并生成片库页面。</p></div>
       </div>
       <div class="row">
         <span class="idx">$</span>
-        <div><h3><span class="mono">kuraya --dry-run</span></h3><p data-i18n="ledger.dryrun">预演，不改动任何文件。</p></div>
+        <div><h3><span class="mono">kuraya --dry-run</span></h3><p data-i18n="ledger.dryrun">预览整理结果，不改动文件。</p></div>
       </div>
       <div class="row">
         <span class="idx">$</span>
-        <div><h3><span class="mono">kuraya --quiet --yes</span></h3><p data-i18n="ledger.quiet">精简输出，免交互，适合计划任务。</p></div>
+        <div><h3><span class="mono">kuraya --quiet --yes</span></h3><p data-i18n="ledger.quiet">无需交互，适合自动与计划任务。</p></div>
       </div>
     </div>
   </section>
@@ -305,10 +356,8 @@
 <!-- 落款 · 页脚 -->
 <footer class="fade">
   <div class="foot-in">
-    <p class="declare" data-i18n-html="legal.declare">
-      本工具仅整理用户<b>已合法持有</b>的本地 JAV 影片，
-      不提供、不索引、不分发任何内容。
-    </p>
+    <!-- 不要断行：源码换行会折叠成一个空格，无 JS 时「影片，」后面会多出一个空 -->
+    <p class="declare" data-i18n-html="legal.declare">KURAYA 仅用于整理用户<b>合法持有</b>的本地影片，不提供、不托管、不分发任何影片内容。</p>
     <p class="declare-sub" data-i18n="legal.sub">请遵守所在地区法律，使用责任自负。</p>
     <p class="foot-meta">
       KURAYA 蔵屋 v{{VERSION}} · MIT License ·
@@ -319,12 +368,20 @@
 
 <span class="sr-only" id="copy-live" aria-live="polite"></span>
 
-<!-- 封面大图预览：演示区无影片文件，点击封面展示大图（替代「点封面即播」） -->
+<!-- 封面大图预览：演示区无影片文件，点击封面展示大图（替代「点封面即播」）
+     方向键 / 左右按钮 / 横向滑动都可换片，纵向下滑关闭 -->
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="封面预览" data-i18n-aria="cover.preview" hidden>
   <button type="button" class="lightbox-close" id="lightbox-close" data-i18n-aria="cover.close" aria-label="关闭">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
   </button>
+  <button type="button" class="lightbox-nav lightbox-prev" id="lightbox-prev" data-i18n-aria="cover.prev" aria-label="上一张">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <button type="button" class="lightbox-nav lightbox-next" id="lightbox-next" data-i18n-aria="cover.next" aria-label="下一张">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+  </button>
   <img id="lightbox-img" src="" alt="">
+  <span class="lightbox-count" id="lightbox-count" aria-hidden="true"></span>
 </div>
 
 <script type="module" src="/src/main.js"></script>
