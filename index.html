@@ -152,23 +152,30 @@ if(document.fonts&&document.fonts.ready){var t=setTimeout(go,900);document.fonts
     <div class="order">
       <div class="order-col">
         <p class="order-cap" data-i18n="order.before">整理前 · 待整理</p>
+        <!-- 独立示意：进去几个影片，右边就出来几个。杂物（种子、说明文本）由 cleanup.py 清掉，
+             右树里不出现。这里不必与貳区片库的 6 部/4 位演员对齐——那是另一座库的口径 -->
         <ul class="order-list mess">
           <li>花菱雫.SEIS-0314.1080p.XXX.mkv</li>
           <li>[新片]月見桜_SHID-0108_最终修正版.mkv</li>
           <li>BYAK1122 雪村凛 hd.mp4</li>
-          <li>未命名_20250930_01.mkv</li>
+          <li>SEIS-0314.torrent</li>
+          <li>【必看】说明.txt</li>
         </ul>
       </div>
       <div class="order-arrow" aria-hidden="true"></div>
       <div class="order-col">
         <p class="order-cap" data-i18n="order.after">整理后 · 影片库</p>
+        <!-- 左边几个影片，这里就几个，一一对应。目录布局见 media/archive.py（写死「演员名/番号」）。
+             树只到番号层——每个目录里有哪些文件，由下面的活终端用大白话逐行演（封面/裁剪/元数据/入库）。
+             缩进用定宽的 <i class="g">，不能靠空格：HTML 空白折叠会把连续空格压成一个 -->
         <ul class="order-list tidy">
           <li class="dir" data-i18n="order.root">影片库/</li>
-          <li class="dir d1">└ 花菱雫/</li>
-          <li class="dir d2">└ SEIS-0314/</li>
-          <li class="d3">├ SEIS-0314.mkv</li>
-          <li class="d3">├ poster.jpg · fanart.jpg</li>
-          <li class="d3">└ movie.nfo</li>
+          <li class="dir"><i class="g">├</i>花菱雫/</li>
+          <li><i class="g">│</i><i class="g">└</i>SEIS-0314/</li>
+          <li class="dir"><i class="g">├</i>月見桜/</li>
+          <li><i class="g">│</i><i class="g">└</i>SHID-0108/</li>
+          <li class="dir"><i class="g">└</i>雪村凛/</li>
+          <li><i class="g"></i><i class="g">└</i>BYAK-1122/</li>
         </ul>
       </div>
     </div>
@@ -331,37 +338,27 @@ if(document.fonts&&document.fonts.ready){var t=setTimeout(go,900);document.fonts
       <p><span class="num">5</span><span class="c-menu" data-i18n="term.update">更新</span><span data-i18n="term.update_desc">检查并安装新版本</span></p>
       <p><span class="num">0</span><span class="c-menu" data-i18n="term.quit">退出</span></p>
     </div>
-    <div class="ledger">
-      <div class="row">
-        <span class="idx">$</span>
-        <div><h3><span class="mono">kuraya</span></h3><p data-i18n="ledger.full">进入交互菜单，一键完成全量整理。</p></div>
-      </div>
-      <div class="row">
-        <span class="idx">$</span>
-        <div><h3><span class="mono">kuraya rebuild</span></h3><p data-i18n="ledger.rebuild">重新扫描并生成片库页面。</p></div>
-      </div>
-      <div class="row">
-        <span class="idx">$</span>
-        <div><h3><span class="mono">kuraya --dry-run</span></h3><p data-i18n="ledger.dryrun">预览整理结果，不改动文件。</p></div>
-      </div>
-      <div class="row">
-        <span class="idx">$</span>
-        <div><h3><span class="mono">kuraya --quiet --yes</span></h3><p data-i18n="ledger.quiet">无需交互，适合自动与计划任务。</p></div>
-      </div>
-    </div>
   </section>
 
 </main>
 
-<!-- 落款 · 页脚 -->
-<footer class="fade">
+<!-- 落款 · 页脚。不挂 .fade：页脚在页面最底，滚到才触发淡入，等于每次都能看见它刚冒出来 -->
+<footer>
   <div class="foot-in">
+    <!-- 落款印：开头钤了印，结尾也该有。同时是长页面滚到底的回头路 -->
+    <a class="foot-mark" href="#top" data-i18n-aria="foot.top" aria-label="回到顶部">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><path d="M12 3.8L20.2 12 12 20.2 3.8 12z"/><path class="mark-core" d="M12 9.2l2.8 2.8-2.8 2.8-2.8-2.8z"/></svg>
+    </a>
     <!-- 不要断行：源码换行会折叠成一个空格，无 JS 时「影片，」后面会多出一个空 -->
     <p class="declare" data-i18n-html="legal.declare">KURAYA 仅用于整理用户<b>合法持有</b>的本地影片，不提供、不托管、不分发任何影片内容。</p>
     <p class="declare-sub" data-i18n="legal.sub">请遵守所在地区法律，使用责任自负。</p>
+    <div class="foot-rule" aria-hidden="true"></div>
+    <!-- 最后一眼是品牌落款，不是免责声明 -->
     <p class="foot-meta">
-      KURAYA 蔵屋 v{{VERSION}} · MIT License ·
-      <a href="https://github.com/tenngoxars/Kuraya" target="_blank" rel="noopener">github.com/tenngoxars/Kuraya ↗</a>
+      <span>KURAYA 蔵屋</span>
+      <span>v{{VERSION}}</span>
+      <span>MIT License</span>
+      <a href="https://github.com/tenngoxars/Kuraya" target="_blank" rel="noopener">GitHub ↗</a>
     </p>
   </div>
 </footer>

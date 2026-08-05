@@ -145,7 +145,11 @@ pre.code{flex:1;min-width:0;padding:13px 18px;font-size:13px;line-height:1.75;ov
 .hero-meta a:hover::after,.foot-meta a:hover::after{transform:scaleX(1)}
 
 /* ── 卷 · 各节 ─────────────────────────────────── */
-.sec{position:relative;max-width:920px;margin:0 auto;padding:96px 24px 0;border-top:1px solid var(--line)}
+/* 上下 padding 对称。原来下边距是 0，全靠「末尾子元素自己带空隙」撑着，
+   一旦末尾是个带边框的框（壹区的目录树），它的下边框就和下一区的 border-top 并成一条线。
+   这里必须用 padding 不能用子元素的 margin-bottom：.sec 没有下边框也没有下 padding 时，
+   子元素的下外边距会塌陷穿出去，等于没写 */
+.sec{position:relative;max-width:920px;margin:0 auto;padding:96px 24px;border-top:1px solid var(--line)}
 .sec-head{position:relative;margin-bottom:46px}
 .sec-no{color:var(--gold);font-size:13px;letter-spacing:.6em;font-weight:500}
 .sec-title{font-size:clamp(26px,3.6vw,36px);font-weight:400;margin-top:16px;letter-spacing:.1em}
@@ -153,34 +157,29 @@ pre.code{flex:1;min-width:0;padding:13px 18px;font-size:13px;line-height:1.75;ov
 .vmark{position:absolute;right:0;top:4px;writing-mode:vertical-rl;font-size:11px;letter-spacing:.42em;color:rgba(242,240,237,.3)}
 @media(max-width:980px){.vmark{display:none}}
 
-/* 清册 · 特性与命令行式列表 */
-.ledger{margin-top:6px}
-.row{display:grid;grid-template-columns:64px 1fr;gap:20px;padding:24px 0;border-top:1px solid var(--line);align-items:baseline}
-.row:last-child{border-bottom:1px solid var(--line)}
-.row .idx{font-family:var(--font-latin);font-weight:300;font-size:16px;color:var(--gold)}
-.row h3{font-size:16px;font-weight:400;letter-spacing:.06em}
-.row h3 .mono{font-size:13.5px;font-weight:400}
-.row p{color:var(--dim);font-size:14px;margin-top:4px;line-height:1.95}
 
 /* ── 壹 · 乱 → 齐：左「待整理」右「归档后」，产品叙事的起点 ── */
 /* 缩进全部走 padding（不能靠空格：HTML 正常空白折叠会把连续空格压成一个） */
-.order{display:grid;grid-template-columns:1fr auto 1fr;gap:24px;align-items:stretch}
-.order-col{min-width:0;display:flex;flex-direction:column}
+/* 两栏顶端对齐、各自然高：2 个乱文件 → 一整座库，高度差本身就是要表达的东西，
+   拉成等高只会让左框空出一大片。
+   下方留白由 .sec 的 padding-bottom 统一给，这里不再自己加 margin */
+.order{display:grid;grid-template-columns:1fr auto 1fr;gap:24px;align-items:start}
+.order-col{min-width:0}
 .order-cap{font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
-.order-list{flex:1;list-style:none;font-family:var(--font-mono);font-size:12.5px;line-height:2.15;border:1px solid var(--line);background:var(--surface);padding:20px 18px;overflow-x:auto}
+.order-list{list-style:none;font-family:var(--font-mono);font-size:12.5px;line-height:2.15;border:1px solid var(--line);background:var(--surface);padding:20px 18px;overflow-x:auto}
 .order-list li{white-space:nowrap}
 .order-list.mess li{color:var(--dim)}
 .order-list.tidy li{color:var(--text)}
 .order-list.tidy .dir{color:var(--gold-soft)}
-.order-list.tidy .d1{padding-left:1.6em}
-.order-list.tidy .d2{padding-left:3.2em}
-.order-list.tidy .d3{padding-left:4.8em}
-.order-arrow{align-self:center;display:flex;align-items:center;justify-content:center;color:var(--gold);font-family:var(--font-mono);font-size:11px;line-height:1}
+/* 树的缩进与竖线：定宽 inline-block，一格一层。不能用空格字符补位 */
+.order-list.tidy .g{display:inline-block;width:1.55em;color:var(--faint)}
+/* 箭头贴着两个框的上沿，不再垂直居中（两框已不等高，居中会飘到左框下方） */
+.order-arrow{align-self:start;margin-top:56px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-family:var(--font-mono);font-size:11px;line-height:1}
 .order-arrow::before{content:"";width:28px;height:1px;background:currentColor;opacity:.55}
 .order-arrow::after{content:"▸";margin-left:-1px}
 @media(max-width:760px){
   .order{grid-template-columns:1fr;gap:16px}
-  .order-arrow{transform:rotate(90deg);height:26px}
+  .order-arrow{margin-top:0;justify-self:center;transform:rotate(90deg);height:26px}
 }
 
 /* ── 片库复刻区：CSS 值与 kuraya/web/style.css 一致 ── */
@@ -325,7 +324,6 @@ pre.code{flex:1;min-width:0;padding:13px 18px;font-size:13px;line-height:1.75;ov
 /* 活终端光标：闪烁提示正在输出 */
 .term-cursor{display:inline-block;width:.58em;height:1.05em;background:var(--gold-soft);flex:none;animation:term-blink 1.1s steps(2,start) infinite}
 @keyframes term-blink{50%{opacity:0}}
-.term + .ledger{margin-top:38px}
 @media(max-width:600px){
   .term{--term-lines:11;height:calc(var(--term-lines) * 2em + 36px);padding:18px 16px;font-size:clamp(10.5px,2.9vw,12.5px)}
   .term .c{min-width:5em}
@@ -334,14 +332,29 @@ pre.code{flex:1;min-width:0;padding:13px 18px;font-size:13px;line-height:1.75;ov
 }
 
 /* ── 落款 · 页脚 ───────────────────────────────── */
-footer{border-top:1px solid var(--line);margin-top:110px;padding:60px 24px 64px}
+/* 与叁区之间的留白已由 .sec 的 padding-bottom 给出，这里不再叠一份 margin */
+footer{border-top:1px solid var(--line);padding:60px 24px 64px}
 .foot-in{max-width:920px;margin:0 auto;text-align:center}
+/* 落款印：与页眉 / hero / 片库同一枚家纹。开头钤了印，结尾也该有，同时是滚到底的回头路 */
+.foot-mark{display:inline-flex;color:var(--gold);transition:color .3s}
+.foot-mark svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.1;stroke-linejoin:miter}
+.foot-mark circle{opacity:.45}
+.foot-mark .mark-core{fill:currentColor;stroke:none}
+.foot-mark:hover{color:var(--gold-soft)}
 /* 44em=616px：简体 572px、繁体 586px 都能一行说完（原来 38em=532px 差一口气就折了）。
    英文 858px 仍会折成两行，balance 让它折得均匀，不留孤字 */
-.declare{max-width:44em;margin:0 auto;font-size:14px;color:var(--dim);line-height:2.1;text-wrap:balance}
+.declare{max-width:44em;margin:26px auto 0;font-size:14px;color:var(--dim);line-height:2.1;text-wrap:balance}
 .declare b{color:var(--text);font-weight:500}
+/* 与 .foot-meta 同字号：原来 12.5 对 13，层级成了「大、小、中」，读下来是乱的 */
 .declare-sub{margin-top:14px;font-size:12.5px;color:var(--faint);letter-spacing:.06em}
-.foot-meta{margin-top:30px;font-family:var(--font-latin);font-size:13px;color:var(--faint);letter-spacing:.18em}
+/* 发丝线：hero / 片库 / 终端都在用的元素，把声明与落款分开，页面最后一眼是品牌不是免责 */
+.foot-rule{width:min(200px,40%);height:1px;background:var(--line);margin:34px auto 30px}
+/* 靠间距分隔不用 ·；GitHub 只写名字——裸 URL 在 .18em 字距下是页脚最长的一行，却最不重要 */
+.foot-meta{display:flex;justify-content:center;flex-wrap:wrap;gap:6px 26px;font-family:var(--font-latin);font-size:12.5px;color:var(--faint);letter-spacing:.18em}
+/* 窄屏四项放不下一行。限宽逼它折成 2+2，否则会是 3+1、GitHub 落单成孤行 */
+@media(max-width:470px){
+  .foot-meta{max-width:20em;margin:0 auto;gap:6px 16px;font-size:11.5px}
+}
 
 /* ── 动效 · 展卷体系（.js 启用；无 JS 全部可见） ── */
 /* 支撑态：区块入场。起始 opacity 归 0（原来停在 .2，快速滚动时整页像没加载完），
