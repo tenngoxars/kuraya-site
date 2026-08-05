@@ -202,9 +202,12 @@ a.lib-card{text-decoration:none;color:inherit;display:block;position:relative;op
 .lib-cover img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s cubic-bezier(.16,1,.3,1),filter .45s;filter:saturate(.92) contrast(1.02)}
 a.lib-card:hover .lib-cover{box-shadow:0 22px 50px -18px rgba(0,0,0,.9)}
 a.lib-card:hover .lib-cover img{transform:scale(1.05);filter:saturate(1.05) contrast(1.02)}
-.lib-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .35s;background:linear-gradient(to top,rgba(0,0,0,.5),rgba(0,0,0,.15))}
-a.lib-card:hover .lib-play{opacity:1}
-.lib-play span{width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.55);background:rgba(0,0,0,.3);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;transform:scale(.86);transition:transform .35s cubic-bezier(.16,1,.3,1)}
+/* 播放按钮：渐变遮罩拆到 ::before 用 opacity 淡入；按钮本身 blur 的 backdrop-filter
+   在元素/祖先 opacity<1 时不渲染，故按钮用 scale 出现，blur 从第一帧即生效 */
+.lib-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.lib-play::before{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.5),rgba(0,0,0,.15));opacity:0;transition:opacity .35s}
+a.lib-card:hover .lib-play::before{opacity:1}
+.lib-play span{width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.55);background:rgba(0,0,0,.3);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;transform:scale(0);transition:transform .35s cubic-bezier(.16,1,.3,1)}
 a.lib-card:hover .lib-play span{transform:scale(1)}
 .lib-meta{padding:13px 2px 0}
 .lib-code{font-size:12px;letter-spacing:.1em;color:var(--gold-soft);font-variant-numeric:tabular-nums;font-weight:500}
