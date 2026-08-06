@@ -1,0 +1,3 @@
+# 让 Windows PowerShell 5.1 的 irm 按 UTF-8 解码安装脚本（无 charset 时按 ISO-8859-1 乱码）
+/install.ps1
+  Content-Type: text/plain; charset=utf-8
