@@ -96,7 +96,8 @@ export const I18N = {
     'launcher.new_archived': '新入库 {done} 部',
     'launcher.total': '库内共 {total} 部',
     'launcher.elapsed': '耗时 {elapsed}s',
-    'launcher.open_page': '打开或切回 index.html 查看',
+    'launcher.later': '稍后再说',
+    'launcher.select_hint': '↑↓ 选择 · 回车 确认 · Esc 跳过',
     'launcher.titles': '部',
   },
 
@@ -187,7 +188,8 @@ export const I18N = {
     'launcher.new_archived': '新入庫 {done} 部',
     'launcher.total': '庫內共 {total} 部',
     'launcher.elapsed': '耗時 {elapsed} 秒',
-    'launcher.open_page': '開啟或切回 index.html 查看',
+    'launcher.later': '稍後再說',
+    'launcher.select_hint': '↑↓ 選擇 · Enter 確認 · Esc 跳過',
     'launcher.titles': '部',
   },
 
@@ -278,7 +280,8 @@ export const I18N = {
     'launcher.new_archived': '{done} newly archived',
     'launcher.total': '{total} titles in the library',
     'launcher.elapsed': 'took {elapsed}s',
-    'launcher.open_page': 'Open or switch back to index.html',
+    'launcher.later': 'Later',
+    'launcher.select_hint': '↑↓ select · Enter confirm · Esc skip',
     'launcher.titles': 'titles',
   },
 };

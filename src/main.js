@@ -715,13 +715,28 @@ if (term && 'IntersectionObserver' in window) {
           const stick = atBottom();
           const box = document.createElement('div');
           box.className = 'term-box';
-          box.innerHTML = `<p>${summary}</p><p class="dim">${t('launcher.open_page')}</p>`;
+          box.innerHTML = `<p>${summary}</p>`;
           term.appendChild(box);
           if (stick) follow();
         }
         await line('', 0); // 光标落到卡片之后
+
+        /* 刮削完成后选择是否直接打开片库（对应产品 launcher.py 的 offer_open_library 选择器，
+           默认选中第一项，动画里静态展示两行选项 + 提示行，不真正交互） */
+        await line(
+          `<span class="in1"><span class="sel">▸</span><span>${t('term.open')}</span><span class="dim">${t('term.open_desc')}</span></span>`,
+          260
+        );
+        await line(
+          `<span class="in1"><span class="dim">·</span><span>${t('launcher.later')}</span></span>`,
+          200
+        );
+        await line(
+          `<span class="in1"><span class="dim">${t('launcher.select_hint')}</span></span>`,
+          300
+        );
         if (!alive()) break;
-        await sleep(3600);
+        await sleep(3800);
       }
       running = false;
       /* 循环是在某个 await 里读到 inView=false（或被新一代接管）才退出的，这期间它可能
