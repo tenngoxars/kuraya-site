@@ -582,8 +582,13 @@ if (term && 'IntersectionObserver' in window) {
     /* 终端高度是定死的（见 .term 的 --term-lines），输出靠内部滚动跟随，
        页面不会被越写越长。用户自己往回滚时不抢走滚动位置 */
     const atBottom = () => term.scrollHeight - term.scrollTop - term.clientHeight < 40;
+    /* 必须瞬时到位：.term 开着 scroll-behavior:smooth，直接设 scrollTop 会触发平滑动画，
+       滚动还没追上来时下一个 atBottom() 已经判成「用户滚上去了」，后续行全部停止跟随，
+       动画结尾（统计卡片/选择器）就落在视口外。手动滚动仍保留 smooth */
     const follow = () => {
+      term.style.scrollBehavior = 'auto';
       term.scrollTop = term.scrollHeight;
+      term.style.scrollBehavior = '';
     };
 
     /* 当前 spinner 行。下一条输出「就地覆盖」它而不是删掉再新增——
@@ -722,19 +727,20 @@ if (term && 'IntersectionObserver' in window) {
         await line('', 0); // 光标落到卡片之后
 
         /* 刮削完成后选择是否直接打开片库（对应产品 launcher.py 的 offer_open_library 选择器，
-           默认选中第一项，动画里静态展示两行选项 + 提示行，不真正交互） */
+           默认选中第一项，动画里静态展示两行选项 + 提示行，不真正交互）。
+           缩进类 in1 落在 <p> 上（与 branch 一致），子元素平铺成 flex item，
+           定宽列 .opt 才对 desc 生效——包进行内 span 里 min-width 会失效 */
         await line(
-          `<span class="in1"><span class="sel">▸</span><span>${t('term.open')}</span><span class="dim">${t('term.open_desc')}</span></span>`,
-          260
+          `<span class="sel">▸</span><span class="opt">${t('term.open')}</span><span class="dim">${t('term.open_desc')}</span>`,
+          260,
+          'in1'
         );
         await line(
-          `<span class="in1"><span class="dim">·</span><span>${t('launcher.later')}</span></span>`,
-          200
+          `<span class="dim">·</span><span class="opt">${t('launcher.later')}</span>`,
+          200,
+          'in1'
         );
-        await line(
-          `<span class="in1"><span class="dim">${t('launcher.select_hint')}</span></span>`,
-          300
-        );
+        await line(`<span class="dim">${t('launcher.select_hint')}</span>`, 300, 'in1');
         if (!alive()) break;
         await sleep(3800);
       }

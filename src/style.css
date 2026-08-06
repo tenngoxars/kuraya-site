@@ -313,6 +313,8 @@ pre.code{flex:1;min-width:0;padding:13px 18px;font-size:13px;line-height:1.75;ov
 .term .blue{color:#7fa0cc}
 /* 刮削完成后的选项选择器：选中项 ▸ 金色加粗（产品 launcher.py 的 C.GOLD+BOLD） */
 .term .sel{color:var(--gold);font-weight:600}
+/* 选项名定宽列：desc 从同一列开始（产品 14 字符列宽；最长项 "Open library" 约 8em） */
+.term .opt{flex:none;min-width:8em}
 /* 结尾统计卡片：产品里用 ╭─╮ 画框，这里用真边框，窄屏不会被字符宽度撑破 */
 .term-box{border:1px solid #7fae6a;border-radius:6px;padding:8px 16px;margin:.5em 0;text-align:center}
 .term-box p{display:block;min-height:0;color:#7fae6a}
