@@ -200,7 +200,7 @@ pre.code{flex:1;min-width:0;padding:13px 18px;font-size:13px;line-height:1.75;ov
 .lib-stats{display:flex;gap:20px;align-items:baseline;flex-wrap:wrap;margin-left:auto}
 .lib-stats .num{font-size:13px;font-weight:500;font-variant-numeric:tabular-nums}
 .lib-stats .lbl{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-left:5px}
-.lib-toolbar{position:sticky;top:var(--mast-h);z-index:30;background:rgba(8,9,11,.82);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border-bottom:1px solid var(--line);padding:14px 48px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.lib-toolbar{position:sticky;top:var(--mast-h);z-index:30;background:rgba(8,9,11,.82);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border-bottom:1px solid var(--line);padding:14px 48px 10px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .lib-search{position:relative;flex:1;min-width:200px;max-width:400px}
 .lib-search svg{position:absolute;left:0;top:50%;transform:translateY(-50%);opacity:.4}
 .lib-search input{width:100%;padding:8px 22px 8px 26px;border:none;border-bottom:1px solid var(--line-strong);background:transparent;color:var(--text);font-size:14px;outline:none;font-family:inherit;transition:border-color .3s}
@@ -225,13 +225,42 @@ pre.code{flex:1;min-width:0;padding:13px 18px;font-size:13px;line-height:1.75;ov
 .select-opt[aria-selected="true"]{color:var(--gold-soft);background:rgba(201,162,39,.08)}
 .select-opt[aria-selected="true"]::after{content:"";position:absolute;right:10px;top:50%;transform:translateY(-50%);width:5px;height:5px;border-radius:50%;background:var(--gold)}
 .lib-count{color:var(--faint);font-size:11.5px;letter-spacing:.1em;margin-left:auto;font-variant-numeric:tabular-nums}
+/* 已激活筛选 pills（与真实片库 style.css .pills/.pill/.reset 一致） */
+.lib-pills{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.lib-pill{display:flex;align-items:center;gap:6px;padding:4px 7px 4px 11px;border-radius:2px;border:none;background:var(--gold-soft);color:#17150e;font-family:inherit;font-size:11.5px;font-weight:500;cursor:pointer}
+.lib-pill .k{opacity:.5;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase}
+.lib-pill .x{opacity:.45;font-size:14px;line-height:1}
+.lib-pill:hover .x{opacity:.9}
+.lib-reset{display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:2px;border:1px solid var(--line-strong);background:transparent;color:var(--dim);cursor:pointer;font-family:inherit;font-size:11.5px;letter-spacing:.02em;transition:color .2s,border-color .2s}
+.lib-reset:hover{color:var(--text);border-color:var(--gold-soft)}
+.lib-reset svg{width:11px;height:11px;flex:none}
 /* 搜索无匹配空态（与真实片库 style.css 一致） */
 .lib-empty{grid-column:1/-1;text-align:center;color:var(--faint);padding:90px 20px;font-size:13px;letter-spacing:.08em}
-.lib-chips{display:flex;gap:7px;padding:18px 48px 4px;flex-wrap:wrap}
-.lib-chip{font-size:12px;padding:5px 13px;border-radius:100px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--dim);font-family:inherit;letter-spacing:.01em;transition:all .2s}
+/* 筛选行：维度切换 + 宽度自适应的 chips + 更多面板（与真实片库 style.css .chips/.chip/.dims 一致） */
+.lib-chips{display:flex;gap:7px;padding:6px 48px 14px;flex-wrap:nowrap;align-items:center}
+.lib-chip{font-size:12px;padding:5px 13px;border-radius:2px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--dim);font-family:inherit;letter-spacing:.01em;flex:none;white-space:nowrap;transition:all .2s}
 .lib-chip:hover{border-color:var(--line-strong);color:var(--text)}
 .lib-chip.on{background:var(--gold-soft);border-color:var(--gold-soft);color:#17150e;font-weight:500}
 .lib-chip .n{opacity:.5;font-size:10.5px;margin-left:4px;font-variant-numeric:tabular-nums}
+.lib-chip.more{color:var(--faint);border-style:dashed}
+.lib-chip.more:hover{color:var(--gold-soft);border-color:var(--gold-soft)}
+.lib-dims{display:flex;align-items:center;gap:15px;flex:none}
+.lib-dim{border:none;background:transparent;padding:0;cursor:pointer;font-family:inherit;font-size:12px;letter-spacing:.04em;color:var(--faint);transition:color .2s;white-space:nowrap;text-transform:capitalize}
+.lib-dim:hover{color:var(--dim)}
+.lib-dim.on{color:var(--gold-soft);font-weight:500}
+.lib-dim .c{font-size:10px;opacity:.5;margin-left:4px;font-variant-numeric:tabular-nums}
+.lib-dim-rule{width:1px;height:12px;background:var(--line-strong);flex:none;margin:0 3px}
+.lib-more-wrap{position:relative;flex:none}
+.lib-more-panel{position:absolute;top:calc(100% + 8px);right:0;z-index:40;width:300px;padding:8px;border-radius:4px;background:var(--surface);border:1px solid var(--line-strong);box-shadow:0 24px 60px -20px rgba(0,0,0,.9);opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .18s,transform .18s,visibility 0s .18s}
+.lib-more-wrap.open .lib-more-panel{opacity:1;visibility:visible;transform:none;transition:opacity .18s,transform .18s,visibility 0s}
+.lib-more-search{width:100%;padding:7px 9px;margin-bottom:6px;border:none;border-bottom:1px solid var(--line-strong);background:transparent;color:var(--text);font-size:13px;font-family:inherit;outline:none}
+.lib-more-search:focus{border-bottom-color:var(--gold)}
+.lib-more-search::placeholder{color:var(--faint)}
+.lib-more-list{max-height:300px;overflow-y:auto}
+.lib-more-opt{display:flex;justify-content:space-between;align-items:center;width:100%;padding:7px 9px;border:none;border-radius:2px;background:transparent;color:var(--dim);cursor:pointer;font-family:inherit;font-size:13px;text-align:left}
+.lib-more-opt:hover,.lib-more-opt:focus{background:var(--surface-2);color:var(--text);outline:none}
+.lib-more-opt .n{color:var(--faint);font-size:11px;font-variant-numeric:tabular-nums}
+.lib-more-empty{padding:16px 9px;color:var(--faint);font-size:12px;text-align:center}
 .lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:30px 22px;padding:30px 48px var(--lib-pad-b);position:relative;z-index:2}
 /* 卡片是 button：点击打开封面大图，不是导航。原来用 <a href="#preview"> + preventDefault，
    状态栏显示假 URL、中键新标签打开无意义 */
@@ -258,11 +287,18 @@ pre.code{flex:1;min-width:0;padding:13px 18px;font-size:13px;line-height:1.75;ov
 .lib-card:hover .lib-play::before,.lib-card:focus-visible .lib-play::before{opacity:1}
 .lib-play span{width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.55);background:rgba(0,0,0,.3);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;transform:scale(0);transition:transform .35s cubic-bezier(.16,1,.3,1)}
 .lib-card:hover .lib-play span,.lib-card:focus-visible .lib-play span{transform:scale(1)}
+/* NEW 角标：最近入库（7 天内）的影片（与真实片库 style.css .badge-new 一致） */
+.lib-badge-new{position:absolute;top:8px;left:8px;z-index:3;display:flex;align-items:center;gap:5px;padding:3px 7px 3px 6px;border-radius:2px;background:rgba(8,9,11,.72);backdrop-filter:blur(4px);box-shadow:inset 0 0 0 1px rgba(201,162,39,.5);font-size:9.5px;font-weight:500;letter-spacing:.16em;color:var(--gold-soft);pointer-events:none}
+.lib-badge-new::before{content:"";width:4px;height:4px;flex:none;background:var(--gold);transform:rotate(45deg)}
 .lib-meta{display:block;padding:13px 2px 0}
 .lib-code{display:block;font-size:12px;letter-spacing:.1em;color:var(--gold-soft);font-variant-numeric:tabular-nums;font-weight:500;transition:color .3s}
-.lib-actors{display:block;font-size:14.5px;color:var(--text);margin-top:5px;font-weight:400;letter-spacing:-.005em;line-height:1.35}
+.lib-actors{display:block;font-size:14.5px;color:var(--text);margin-top:5px;font-weight:400;letter-spacing:-.005em;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* 卡片内可点击的元数据（演员/厂商/导演）：点击按该值筛选（与真实片库 .meta-link 一致） */
+.lib-meta-link{position:relative;z-index:4;cursor:pointer;transition:color .15s}
+.lib-meta-link:hover{color:var(--gold-soft);text-decoration:underline;text-underline-offset:2px}
 .lib-sub{font-size:11px;color:var(--faint);margin-top:7px;display:flex;gap:8px;align-items:center;letter-spacing:.03em}
 .lib-sub .dot{width:2px;height:2px;border-radius:50%;background:var(--faint);flex:none}
+.lib-sub .lib-meta-link{white-space:nowrap}
 .lib-sub .studio{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lib-sub .date{white-space:nowrap;font-variant-numeric:tabular-nums}
 /* 片库移动端规则（与 style.css @media max-width:720px 一致） */
@@ -271,6 +307,7 @@ pre.code{flex:1;min-width:0;padding:13px 18px;font-size:13px;line-height:1.75;ov
   .lib-masthead{padding:16px 22px 12px}
   .lib-stats{margin-left:0;gap:14px}
   .lib-toolbar,.lib-chips{padding-left:22px;padding-right:22px}
+  .lib-more-panel{width:calc(100vw - 60px)}
   .lib-grid{padding:24px 22px var(--lib-pad-b);gap:24px 16px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
 }
 /* 说明文字回收复刻区底部留白：负值由 --lib-pad-b 推出，不再是写死的 -46px */

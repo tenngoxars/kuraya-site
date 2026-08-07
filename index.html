@@ -15,11 +15,6 @@
 <title>KURAYA 蔵屋 — JAV 影片刮削与编目工具</title>
 <meta name="description" content="KURAYA 蔵屋是一款本地优先的 JAV 影片刮削与编目工具。自动整理封面与元数据，生成无需服务器、可离线浏览的私人片库。支持 macOS、Windows 与 Linux，MIT 开源。">
 <link rel="canonical" href="https://kuraya.app/">
-<!-- 三语静态页：/ 简中 · /zh-TW/ 繁中 · /en/ 英文（构建时由 scripts/build-i18n-pages.mjs 生成副本） -->
-<link rel="alternate" hreflang="zh-CN" href="https://kuraya.app/">
-<link rel="alternate" hreflang="zh-TW" href="https://kuraya.app/zh-TW/">
-<link rel="alternate" hreflang="en" href="https://kuraya.app/en/">
-<link rel="alternate" hreflang="x-default" href="https://kuraya.app/">
 <meta name="theme-color" content="#08090b">
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -236,8 +231,6 @@ if(document.fonts&&document.fonts.ready){var t=setTimeout(go,900);document.fonts
         </div>
         <div class="lib-stats">
           <div><span class="num">6</span><span class="lbl" data-i18n="stat.movies">部影片</span></div>
-          <div><span class="num">4</span><span class="lbl" data-i18n="stat.actress">位演员</span></div>
-          <div><span class="num">6</span><span class="lbl" data-i18n="stat.studio">个厂商</span></div>
         </div>
       </div>
 
@@ -245,7 +238,7 @@ if(document.fonts&&document.fonts.ready){var t=setTimeout(go,900);document.fonts
       <div class="lib-toolbar">
         <div class="lib-search">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="text" id="search" placeholder="搜索演员 · 番号 · 厂商" data-i18n-placeholder="search.placeholder">
+          <input type="text" id="search" placeholder="搜索演员 · 番号 · 厂商 · 导演" data-i18n-placeholder="search.placeholder">
           <button type="button" class="clear-btn" id="clear-btn" data-i18n-aria="clear" aria-label="清空">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -261,17 +254,13 @@ if(document.fonts&&document.fonts.ready){var t=setTimeout(go,900);document.fonts
             <button type="button" class="select-opt" role="option" aria-selected="false" data-value="added_desc" data-i18n="sort.added_desc">入库时间 · 新到旧</button>
           </div>
         </div>
-        <span class="lib-count">6 / 6</span>
+        <!-- 已激活筛选 pills：JS 构建（与真实片库一致，有筛选才显示） -->
+        <div class="lib-pills" id="lib-pills"></div>
+        <span class="lib-count"></span>
       </div>
 
-      <!-- 演员筛选 -->
-      <div class="lib-chips">
-        <button type="button" class="lib-chip on" aria-pressed="true" data-i18n="chips.all">全部</button>
-        <button type="button" class="lib-chip" aria-pressed="false">花菱雫<span class="n">2</span></button>
-        <button type="button" class="lib-chip" aria-pressed="false">月見桜<span class="n">2</span></button>
-        <button type="button" class="lib-chip" aria-pressed="false">雪村凛<span class="n">1</span></button>
-        <button type="button" class="lib-chip" aria-pressed="false">朝霧遥<span class="n">1</span></button>
-      </div>
+      <!-- 筛选行（演员/厂商/导演三维 + 更多面板）：由 JS 构建，与真实片库 filters.js 一致 -->
+      <div class="lib-chips" id="lib-chips"></div>
 
       <!-- 卡片网格：封面为外部生成资产 covers/cover-N.webp（2:3，900x1350）
            srcset 320/640/900：桌面渲染宽约 276px、移动端约 158px，直上 900w 是三倍过采样。
@@ -284,8 +273,8 @@ if(document.fonts&&document.fonts.ready){var t=setTimeout(go,900);document.fonts
           </span>
           <span class="lib-meta">
             <span class="lib-code">SEIS-0314</span>
-            <span class="lib-actors">花菱雫</span>
-            <span class="lib-sub"><span class="studio">星霜舍</span><span class="dot"></span><span class="date">2026-03-14 · 128min</span></span>
+            <span class="lib-actors"><span class="lib-meta-link" data-dim="actor" data-val="花菱雫">花菱雫</span></span>
+            <span class="lib-sub"><span class="studio lib-meta-link" data-dim="studio" data-val="星霜舍">星霜舍</span><span class="dot"></span><span class="director lib-meta-link" data-dim="director" data-val="高橋真央">高橋真央</span><span class="dot"></span><span class="date">2026-03-14</span></span>
           </span>
         </button>
         <button type="button" class="lib-card" aria-haspopup="dialog" data-date="2026-01-08" data-added="2026-01-10" style="animation-delay:22ms">
@@ -295,8 +284,8 @@ if(document.fonts&&document.fonts.ready){var t=setTimeout(go,900);document.fonts
           </span>
           <span class="lib-meta">
             <span class="lib-code">SHID-0108</span>
-            <span class="lib-actors">月見桜</span>
-            <span class="lib-sub"><span class="studio">紫電堂</span><span class="dot"></span><span class="date">2026-01-08 · 96min</span></span>
+            <span class="lib-actors"><span class="lib-meta-link" data-dim="actor" data-val="月見桜">月見桜</span></span>
+            <span class="lib-sub"><span class="studio lib-meta-link" data-dim="studio" data-val="紫電堂">紫電堂</span><span class="dot"></span><span class="director lib-meta-link" data-dim="director" data-val="藤井玲央">藤井玲央</span><span class="dot"></span><span class="date">2026-01-08</span></span>
           </span>
         </button>
         <button type="button" class="lib-card" aria-haspopup="dialog" data-date="2025-11-22" data-added="2025-11-25" style="animation-delay:44ms">
@@ -306,8 +295,8 @@ if(document.fonts&&document.fonts.ready){var t=setTimeout(go,900);document.fonts
           </span>
           <span class="lib-meta">
             <span class="lib-code">BYAK-1122</span>
-            <span class="lib-actors">雪村凛</span>
-            <span class="lib-sub"><span class="studio">白夜社</span><span class="dot"></span><span class="date">2025-11-22 · 143min</span></span>
+            <span class="lib-actors"><span class="lib-meta-link" data-dim="actor" data-val="雪村凛">雪村凛</span></span>
+            <span class="lib-sub"><span class="studio lib-meta-link" data-dim="studio" data-val="白夜社">白夜社</span><span class="dot"></span><span class="director lib-meta-link" data-dim="director" data-val="白石敬一">白石敬一</span><span class="dot"></span><span class="date">2025-11-22</span></span>
           </span>
         </button>
         <button type="button" class="lib-card" aria-haspopup="dialog" data-date="2026-02-02" data-added="2026-02-05" style="animation-delay:66ms">
@@ -317,8 +306,8 @@ if(document.fonts&&document.fonts.ready){var t=setTimeout(go,900);document.fonts
           </span>
           <span class="lib-meta">
             <span class="lib-code">SEIR-0202</span>
-            <span class="lib-actors">朝霧遥</span>
-            <span class="lib-sub"><span class="studio">青嵐舎</span><span class="dot"></span><span class="date">2026-02-02 · 112min</span></span>
+            <span class="lib-actors"><span class="lib-meta-link" data-dim="actor" data-val="朝霧遥">朝霧遥</span></span>
+            <span class="lib-sub"><span class="studio lib-meta-link" data-dim="studio" data-val="青嵐舎">青嵐舎</span><span class="dot"></span><span class="director lib-meta-link" data-dim="director" data-val="佐伯直人">佐伯直人</span><span class="dot"></span><span class="date">2026-02-02</span></span>
           </span>
         </button>
         <button type="button" class="lib-card" aria-haspopup="dialog" data-date="2025-09-30" data-added="2025-10-02" style="animation-delay:88ms">
@@ -328,25 +317,27 @@ if(document.fonts&&document.fonts.ready){var t=setTimeout(go,900);document.fonts
           </span>
           <span class="lib-meta">
             <span class="lib-code">KOUY-0930</span>
-            <span class="lib-actors">花菱雫</span>
-            <span class="lib-sub"><span class="studio">紅葉館</span><span class="dot"></span><span class="date">2025-09-30 · 88min</span></span>
+            <span class="lib-actors"><span class="lib-meta-link" data-dim="actor" data-val="花菱雫">花菱雫</span></span>
+            <span class="lib-sub"><span class="studio lib-meta-link" data-dim="studio" data-val="紅葉館">紅葉館</span><span class="dot"></span><span class="director lib-meta-link" data-dim="director" data-val="高橋真央">高橋真央</span><span class="dot"></span><span class="date">2025-09-30</span></span>
           </span>
         </button>
-        <button type="button" class="lib-card" aria-haspopup="dialog" data-date="2026-04-19" data-added="2026-04-21" style="animation-delay:110ms">
+        <button type="button" class="lib-card" aria-haspopup="dialog" data-date="2026-04-19" data-added="2026-08-02" style="animation-delay:110ms">
           <span class="lib-cover" style="--lqip:url(data:image/webp;base64,UklGRpgAAABXRUJQVlA4IIwAAACQBACdASoQABgAPuleqE0pJSQiMAgBIB0JQBOmUABYOOMBrmMg74Z4PFT37gAA/u7eff3k35I9CsTMg7ENu0pd0WZg7QuuBbT4MXBIHyE+fB6zPRBTrb9QU1Isi23yI76YMopPvWAXJPJWPvUXcBY+sqOmBTSmOTy7825wdYt6csHxBqShXIWApAAAAA==)">
             <img src="covers/cover-6.webp" srcset="covers/cover-6-400.webp 400w, covers/cover-6-640.webp 640w, covers/cover-6.webp 900w" sizes="(max-width:968px) 43vw, 260px" width="900" height="1350" loading="lazy" decoding="async" alt="">
+            <!-- 演示口径：最近入库的影片固定展示 NEW 角标（真实版按入库时间 7 天内现算） -->
+            <span class="lib-badge-new">NEW</span>
             <span class="lib-play"><span><svg width="13" height="15" viewBox="0 0 13 15" fill="#fff"><path d="M0 0l13 7.5L0 15z"/></svg></span></span>
           </span>
           <span class="lib-meta">
             <span class="lib-code">TOKA-0419</span>
-            <span class="lib-actors">月見桜</span>
-            <span class="lib-sub"><span class="studio">藤花舎</span><span class="dot"></span><span class="date">2026-04-19 · 121min</span></span>
+            <span class="lib-actors"><span class="lib-meta-link" data-dim="actor" data-val="月見桜">月見桜</span></span>
+            <span class="lib-sub"><span class="studio lib-meta-link" data-dim="studio" data-val="藤花舎">藤花舎</span><span class="dot"></span><span class="director lib-meta-link" data-dim="director" data-val="藤井玲央">藤井玲央</span><span class="dot"></span><span class="date">2026-04-19</span></span>
           </span>
         </button>
       </div>
     </div>
 
-    <p class="preview-cap" data-i18n="preview.cap">封面、演员、番号与厂商井然归档。点开封面，即可播放。</p>
+    <p class="preview-cap" data-i18n="preview.cap">封面、演员、番号、厂商与导演井然归档。点开封面，即可播放。</p>
   </section>
 
   <!-- 叁 · 命令行速览。终端排版一律走 CSS（HTML 空白折叠会吃掉字符补位的对齐） -->

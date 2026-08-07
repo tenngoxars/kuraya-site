@@ -28,41 +28,16 @@ document.querySelectorAll('[data-lang]').forEach((btn) => {
 
 /* 复制区域：反馈「已复制」，1600ms 后复原 */
 const live = document.getElementById('copy-live');
-const announce = (text) => {
-  if (live) live.textContent = text;
-};
-
-async function copyText(text) {
-  if (navigator.clipboard && window.isSecureContext) {
-    return navigator.clipboard.writeText(text);
-  }
-  return new Promise((resolve, reject) => {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    let ok = false;
-    try {
-      ok = document.execCommand('copy');
-    } catch {
-      /* 旧浏览器兜底失败按未复制处理 */
-    }
-    document.body.removeChild(ta);
-    ok ? resolve() : reject(new Error('copy failed'));
-  });
-}
 
 document.querySelectorAll('.copy').forEach((btn) => {
   btn.addEventListener('click', () => {
     const panel = document.getElementById(btn.dataset.target);
     const code = panel ? panel.querySelector('pre').innerText : '';
-    copyText(code)
+    navigator.clipboard.writeText(code)
       .then(() => {
         btn.textContent = t('copied');
         btn.classList.add('done');
-        announce(t('copied'));
+        if (live) live.textContent = t('copied');
         clearTimeout(btn._timer);
         btn._timer = setTimeout(() => {
           btn.textContent = t('copy');
@@ -85,7 +60,6 @@ document.querySelectorAll('.copy').forEach((btn) => {
 const OS_ARCH = { mac: 'mac-arm64', win: 'win-x64', linux: 'linux-x86_64' };
 const zipBtns = [...document.querySelectorAll('.zip-btn')];
 const instNote = document.getElementById('inst-note');
-const GENERIC_NOTE = () => t('inst.note.generic');
 let zipNoteKey = null;   // 解压即用提示键（检测完成后才有值，存键而非翻译快照）
 let zipNoteParams = null;
 
@@ -95,7 +69,7 @@ const applyNote = () => {
   instNote.innerHTML =
     active && active.id === 'tab-zip' && zipNoteKey
       ? t(zipNoteKey, zipNoteParams)
-      : GENERIC_NOTE();
+      : t('inst.note.generic');
 };
 
 /* 语言切换后刷新提示文案 */
@@ -211,26 +185,84 @@ if ('IntersectionObserver' in window) {
   document.querySelectorAll('.fade').forEach((el) => io.observe(el));
 }
 
-/* 片库演示区：演员筛选 + 排序下拉（交互与真实片库 kuraya/web 一致） */
-const chipBar = document.querySelector('.lib-chips');
+/* 片库演示区：三维筛选（演员/厂商/导演）+ 排序下拉 + pills（交互与真实片库 kuraya/web 一致）。
+   维度计数、搜索归一化、chips 宽度自适应与 pills 逻辑移植自真实版 app.js + filters.js */
+const chipBar = document.getElementById('lib-chips');
 const libCards = [...document.querySelectorAll('.lib-card')];
 const libCount = document.querySelector('.lib-count');
 const libGrid = document.querySelector('.lib-grid');
+const pillsEl = document.getElementById('lib-pills');
 
-if (chipBar && libCards.length && libCount && libGrid) {
-  const total = parseInt(libCount.textContent.split('/')[1], 10) || libCards.length;
+if (chipBar && libCards.length && libCount && libGrid && pillsEl) {
   const searchInput = document.getElementById('search');
   const clearBtn = document.getElementById('clear-btn');
   const emptyEl = document.createElement('div');
   emptyEl.className = 'lib-empty';
-  let activeActor = '全部';
+
+  /* 演示数据收集：卡片 DOM 是唯一数据源（排序搬节点、换片查 DOM，见 lightbox） */
+  const DATA = libCards.map((card) => ({
+    card,
+    code: card.querySelector('.lib-code').innerText,
+    actors: card.querySelector('.lib-actors').innerText.split('、').map((s) => s.trim()).filter(Boolean),
+    studio: card.querySelector('.lib-sub .studio').innerText || '',
+    director: (card.querySelector('.lib-sub .director') || { innerText: '' }).innerText || '',
+    date: card.dataset.date || '',
+    added: card.dataset.added || '',
+  }));
+
+  /* 三个筛选维度统一计算计数后再过滤：没有任何值的维度不出现，
+     避免「导演 0」这种点开也是空的按钮（与真实版一致） */
+  const ALL_DIMS = [
+    { key: 'actor', labelKey: 'dim.actor', of: (it) => it.actors },
+    { key: 'studio', labelKey: 'dim.studio', of: (it) => (it.studio ? [it.studio] : []) },
+    { key: 'director', labelKey: 'dim.director', of: (it) => (it.director ? [it.director] : []) },
+  ];
+  for (const dim of ALL_DIMS) {
+    const counts = new Map();
+    DATA.forEach((it) => dim.of(it).forEach((v) => counts.set(v, (counts.get(v) || 0) + 1)));
+    dim.values = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ja'));
+  }
+  const DIMS = ALL_DIMS.filter((d) => d.values.length > 0);
+
+  let activeDim = 'actor';
+  const active = { actor: null, studio: null, director: null };
   let sortKey = 'date_desc';
 
-  /* 语言切换后同步排序标签与空态文案 */
-  onLangChange(() => {
-    if (sortLabel) sortLabel.textContent = t(`sort.${sortKey}`);
-    if (emptyEl.parentNode) emptyEl.textContent = t('empty');
+  /* 搜索分隔符归一化（与真实版同一套规则）：ABC-001 ≡ abc001；
+     空 sq（纯分隔符查询）必须跳过归一化分支，否则 includes("") 恒真 */
+  const SEPARATORS = /[\s\-_.·・]/g;
+  const squash = (s) => s.replace(SEPARATORS, '');
+  DATA.forEach((it) => {
+    it._fields = [it.code, it.actors.join('、'), it.studio, it.director].map((f) => f.toLowerCase());
+    it._squashed = it._fields.map(squash);
   });
+
+  const sortData = (list) => {
+    const arr = [...list];
+    if (sortKey === 'date_asc') arr.sort((a, b) => a.date.localeCompare(b.date));
+    else if (sortKey === 'added_desc') arr.sort((a, b) => b.added.localeCompare(a.added));
+    else arr.sort((a, b) => b.date.localeCompare(a.date));
+    return arr;
+  };
+
+  const visibleList = () => {
+    const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    let list = DATA;
+    for (const dim of DIMS) {
+      const v = active[dim.key];
+      if (v) list = list.filter((it) => dim.of(it).includes(v));
+    }
+    if (q) {
+      const qs = squash(q);
+      list = list.filter((it) =>
+        it._fields.some((f) => f.includes(q)) ||
+        (qs && it._squashed.some((f) => f.includes(qs))));
+    }
+    return sortData(list);
+  };
+
+  const dirty = () =>
+    !!searchInput?.value.trim() || DIMS.some((d) => active[d.key]) || sortKey !== 'date_desc';
 
   /* 重播入场动画：先清零再强制 reflow，按可见顺序错峰 */
   const replayRise = (card, i) => {
@@ -239,58 +271,175 @@ if (chipBar && libCards.length && libCount && libGrid) {
     card.style.animation = `rise .55s cubic-bezier(.16,1,.3,1) ${i * 22}ms forwards`;
   };
 
-  /* 搜索词匹配：演员 / 番号 / 厂商（与真实片库 app.js render() 一致） */
-  const matchQuery = (card, q) => {
-    if (!q) return true;
-    const actor = card.querySelector('.lib-actors').innerText.toLowerCase();
-    const code = card.querySelector('.lib-code').innerText.toLowerCase();
-    const studio = card.querySelector('.lib-sub .studio').innerText.toLowerCase();
-    return actor.includes(q) || code.includes(q) || studio.includes(q);
-  };
-
   const renderGrid = () => {
-    const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
-    const visible = libCards.filter((card) => {
-      const actor = card.querySelector('.lib-actors').innerText;
-      return (activeActor === '全部' || actor === activeActor) && matchQuery(card, q);
-    });
-    const key = sortKey === 'added_desc' ? 'added' : 'date';
-    visible.sort((a, b) =>
-      sortKey === 'date_asc'
-        ? a.dataset[key].localeCompare(b.dataset[key])
-        : b.dataset[key].localeCompare(a.dataset[key])
-    );
-    libCards.forEach((card) => card.classList.toggle('hidden', !visible.includes(card)));
-    visible.forEach((card) => libGrid.appendChild(card)); // 按序移动节点
+    const visible = visibleList();
+    const visibleSet = new Set(visible.map((it) => it.card));
+    libCards.forEach((card) => card.classList.toggle('hidden', !visibleSet.has(card)));
+    visible.forEach((it) => libGrid.appendChild(it.card)); // 按序移动节点
     /* 空态：无匹配时显示提示行 */
-    if (visible.length) {
-      emptyEl.remove();
-    } else {
+    if (visible.length) emptyEl.remove();
+    else {
       emptyEl.textContent = t('empty');
       libGrid.appendChild(emptyEl);
     }
     if (REDUCE_MOTION) {
-      visible.forEach((card) => { card.style.animation = 'none'; });
+      visible.forEach((it) => { it.card.style.animation = 'none'; });
     } else {
-      visible.forEach((card, i) => replayRise(card, i));
+      visible.forEach((it, i) => replayRise(it.card, i));
     }
-    libCount.textContent = `${visible.length} / ${total}`;
-    if (clearBtn) clearBtn.classList.toggle('show', searchInput && searchInput.value.length > 0);
+    /* 计数只在有筛选/搜索/排序变化时显示（与真实版一致，干净状态不打扰） */
+    libCount.textContent = dirty() ? `${visible.length} / ${DATA.length}` : '';
+    updateClearBtn();
   };
 
-  chipBar.addEventListener('click', (e) => {
-    const chip = e.target.closest('.lib-chip');
-    if (!chip) return;
-    chipBar.querySelectorAll('.lib-chip').forEach((c) => {
-      const on = c === chip;
-      c.classList.toggle('on', on);
-      c.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-    activeActor = chip.childNodes[0].textContent.trim();
-    renderGrid();
-  });
+  /* 筛选行：维度切换 + 宽度自适应 chips + 更多面板（移植自真实版 filters.js buildChips） */
+  const MORE_RESERVE = 118;
 
-  /* 排序下拉：自定义面板（原生 select 的弹出列表无法定制） */
+  const closeMore = () => {
+    chipBar.querySelectorAll('.lib-more-wrap.open').forEach((w) => w.classList.remove('open'));
+  };
+
+  const moreEl = (dim, rest) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'lib-more-wrap';
+    wrap.innerHTML = `
+      <button class="lib-chip more" type="button">${t('more', { n: rest.length })} ▾</button>
+      <div class="lib-more-panel">
+        <input class="lib-more-search" type="text" placeholder="${t('searchIn', { dim: t(dim.labelKey) })}">
+        <div class="lib-more-list"></div>
+      </div>`;
+    const btn = wrap.querySelector('.more');
+    const box = wrap.querySelector('.lib-more-search');
+    const list = wrap.querySelector('.lib-more-list');
+
+    const fill = () => {
+      const q = box.value.trim().toLowerCase();
+      // 与主搜索同一套规则：分隔符归一化后匹配；空 sq 必须跳过归一化分支
+      const qs = squash(q);
+      const base = q ? dim.values : rest;
+      const hits = base.filter(([n]) =>
+        n.toLowerCase().includes(q) || (qs && squash(n.toLowerCase()).includes(qs)));
+      list.innerHTML = '';
+      if (!hits.length) {
+        list.innerHTML = `<div class="lib-more-empty">${t('noMatch', { dim: t(dim.labelKey) })}</div>`;
+        return;
+      }
+      for (const [name, n] of hits) {
+        const o = document.createElement('button');
+        o.className = 'lib-more-opt';
+        o.innerHTML = `<span>${name}</span><span class="n">${n}</span>`;
+        o.onclick = () => { setFilter(dim.key, name); closeMore(); };
+        list.appendChild(o);
+      }
+    };
+
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const open = wrap.classList.toggle('open');
+      if (!open) return;
+      box.value = '';
+      fill();
+      void wrap.offsetHeight;
+      box.focus();
+    };
+    box.oninput = fill;
+    box.onkeydown = (e) => {
+      if (e.key === 'Escape') { closeMore(); btn.focus(); }
+    };
+    wrap.onclick = (e) => e.stopPropagation();
+    return wrap;
+  };
+
+  const buildChips = () => {
+    // 预留给「更多 N ▾」按钮的宽度余量，chips 溢出即收进面板
+    if (!DIMS.length) { chipBar.innerHTML = ''; return; }
+    const dim = DIMS.find((d) => d.key === activeDim);
+    chipBar.innerHTML = '';
+
+    const dims = document.createElement('div');
+    dims.className = 'lib-dims';
+    for (const d of DIMS) {
+      const b = document.createElement('button');
+      b.className = 'lib-dim' + (d.key === activeDim ? ' on' : '');
+      b.textContent = t(d.labelKey);
+      const c = document.createElement('span');
+      c.className = 'c';
+      c.textContent = d.values.length;
+      b.appendChild(c);
+      b.onclick = () => { activeDim = d.key; buildChips(); };
+      dims.appendChild(b);
+    }
+    chipBar.appendChild(dims);
+    const rule = document.createElement('span');
+    rule.className = 'lib-dim-rule';
+    chipBar.appendChild(rule);
+
+    const cur = active[dim.key];
+    const all = document.createElement('button');
+    all.className = 'lib-chip' + (cur === null ? ' on' : '');
+    all.textContent = t('chips.all');
+    all.onclick = () => setFilter(dim.key, null);
+    chipBar.appendChild(all);
+
+    const chip = ([name, n]) => {
+      const b = document.createElement('button');
+      b.className = 'lib-chip' + (cur === name ? ' on' : '');
+      b.textContent = name;
+      const c = document.createElement('span');
+      c.className = 'n';
+      c.textContent = n;
+      b.appendChild(c);
+      b.onclick = () => setFilter(dim.key, name);
+      return b;
+    };
+
+    const padRight = parseFloat(getComputedStyle(chipBar).paddingRight);
+    const hardEdge = chipBar.getBoundingClientRect().right - padRight;
+    const softEdge = hardEdge - MORE_RESERVE;
+
+    let shown = 0;
+    for (const [i, entry] of dim.values.entries()) {
+      const b = chip(entry);
+      chipBar.appendChild(b);
+      const edge = i === dim.values.length - 1 ? hardEdge : softEdge;
+      if (b.getBoundingClientRect().right > edge) { b.remove(); break; }
+      shown++;
+    }
+    const rest = dim.values.slice(shown);
+    if (rest.length) chipBar.appendChild(moreEl(dim, rest));
+  };
+
+  /* 已激活筛选 pills + 总清空（有筛选才显示，与真实版 filters.js buildPills 一致） */
+  const buildPills = () => {
+    pillsEl.innerHTML = '';
+    for (const dim of DIMS) {
+      const v = active[dim.key];
+      if (!v) continue;
+      const b = document.createElement('button');
+      b.className = 'lib-pill';
+      b.innerHTML = `<span class="k">${t(dim.labelKey)}</span>${v}<span class="x">×</span>`;
+      b.onclick = () => setFilter(dim.key, null);
+      pillsEl.appendChild(b);
+    }
+    if (dirty()) {
+      const r = document.createElement('button');
+      r.className = 'lib-reset';
+      r.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>${t('clear')}`;
+      r.onclick = resetAll;
+      pillsEl.appendChild(r);
+    }
+  };
+
+  const setFilter = (key, value) => {
+    active[key] = active[key] === value ? null : value;
+    buildChips();
+    buildPills();
+    renderGrid();
+    /* 真实版筛选后滚回页顶（整页就是片库）；官网片库区在页面中部，
+       滚动会打断浏览，保持当前位置不动 */
+  };
+
+  /* 排序下拉：自定义面板（原生 select 的弹出列表无法定制，与真实版一致） */
   const sortWrap = document.getElementById('sort-wrap');
   const sortBtn = document.getElementById('sort-btn');
   const sortLabel = document.getElementById('sort-label');
@@ -310,6 +459,7 @@ if (chipBar && libCards.length && libCount && libGrid) {
     sortLabel.textContent = t(`sort.${key}`);
     sortOpts.forEach((o) => o.setAttribute('aria-selected', String(o.dataset.value === key)));
     closeSort();
+    buildPills();
     renderGrid();
   };
 
@@ -349,24 +499,20 @@ if (chipBar && libCards.length && libCount && libGrid) {
     }
   });
 
-  /* 搜索：输入过滤 + 清空按钮 + 快捷键（清空语义对齐 app.js resetToHome） */
+  /* 搜索：输入过滤 + 清空按钮 + 快捷键（清空语义对齐真实版 resetAll） */
   const updateClearBtn = () => {
-    if (clearBtn) clearBtn.classList.toggle('show', searchInput.value.length > 0);
+    if (clearBtn) clearBtn.classList.toggle('show', !!searchInput && searchInput.value.length > 0);
   };
 
-  const resetToHome = () => {
+  const resetAll = () => {
     searchInput.value = '';
-    activeActor = '全部';
+    DIMS.forEach((d) => { active[d.key] = null; });
     sortKey = 'date_desc';
-    const allChip = chipBar.querySelector('.lib-chip[data-i18n="chips.all"]');
-    chipBar.querySelectorAll('.lib-chip').forEach((c) => {
-      const on = c === allChip;
-      c.classList.toggle('on', on);
-      c.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
     sortLabel.textContent = t('sort.date_desc');
     sortOpts.forEach((o) => o.setAttribute('aria-selected', String(o.dataset.value === sortKey)));
     updateClearBtn();
+    buildChips();
+    buildPills();
     renderGrid();
     searchInput.focus();
   };
@@ -378,7 +524,7 @@ if (chipBar && libCards.length && libCount && libGrid) {
     });
   }
   if (clearBtn) {
-    clearBtn.addEventListener('click', resetToHome);
+    clearBtn.addEventListener('click', resetAll);
   }
   document.addEventListener('keydown', (e) => {
     if (!searchInput || lbOpen) return;
@@ -393,6 +539,26 @@ if (chipBar && libCards.length && libCount && libGrid) {
     }
   });
 
+  /* 卡片内元数据（演员/厂商/导演）可点击筛选；stopPropagation 挡住开 lightbox 的网格监听 */
+  libGrid.addEventListener('click', (e) => {
+    const link = e.target.closest('.lib-meta-link');
+    if (link) {
+      e.preventDefault();
+      e.stopPropagation();
+      setFilter(link.dataset.dim, link.dataset.val);
+    }
+  });
+
+  /* 语言切换：排序标签、空态、筛选行与 pills 一并按新语言重建 */
+  onLangChange(() => {
+    if (sortLabel) sortLabel.textContent = t(`sort.${sortKey}`);
+    if (emptyEl.parentNode) emptyEl.textContent = t('empty');
+    buildChips();
+    buildPills();
+  });
+
+  buildChips();
+  buildPills();
   renderGrid(); // 初始按「发行日期 · 新到旧」渲染，与 label 一致
 }
 
@@ -429,13 +595,8 @@ if (lightbox && lbImg && lbClose && lbPrev && lbNext && libGrid) {
       const swap = () => {
         if (index === i) lbImg.src = full;
       };
-      if (hi.decode) {
-        hi.src = full;
-        hi.decode().then(swap).catch(() => {});
-      } else {
-        hi.addEventListener('load', swap, { once: true });
-        hi.src = full;
-      }
+      hi.src = full;
+      hi.decode().then(swap).catch(() => {});
     }
     if (lbCount) lbCount.textContent = `${i + 1} / ${cards.length}`;
     lbPrev.hidden = lbNext.hidden = cards.length < 2;
@@ -476,17 +637,10 @@ if (lightbox && lbImg && lbClose && lbPrev && lbNext && libGrid) {
     if (lastFocused) lastFocused.focus();
   };
 
-  /* Tab 兜底：inert 不可用时把焦点圈在对话框的可见控件里 */
-  const trap = (e) => {
-    if (e.key !== 'Tab') return;
-    const items = [lbClose, lbPrev, lbNext].filter((el) => !el.hidden);
-    e.preventDefault();
-    const at = items.indexOf(document.activeElement);
-    const next = at < 0 ? 0 : (at + (e.shiftKey ? -1 : 1) + items.length) % items.length;
-    items[next].focus();
-  };
-
   libGrid.addEventListener('click', (e) => {
+    /* meta-link（演员/厂商/导演）由筛选委托处理，不能在这里触发大图；
+       stopPropagation 只挡冒泡，同一元素上后注册的监听器仍会执行，必须显式排除 */
+    if (e.target.closest('.lib-meta-link')) return;
     const card = e.target.closest('.lib-card');
     if (card) openLb(card);
   });
@@ -507,8 +661,6 @@ if (lightbox && lbImg && lbClose && lbPrev && lbNext && libGrid) {
     } else if (e.key === 'ArrowRight') {
       e.preventDefault();
       step(1);
-    } else {
-      trap(e);
     }
   });
 
