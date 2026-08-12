@@ -1,7 +1,13 @@
-# 同步安装脚本：从 Kuraya 主仓库拉取最新 install.sh / install.ps1。
+# 同步安装脚本与版本号：从 Kuraya 主仓库拉取最新 install.sh / install.ps1，
+# 并把 public/version.txt 对齐到最新 Release。
 # 触发方式：手动运行（Actions → Run workflow）或每天定时检查。
 # 有变化才提交，Cloudflare Pages 检测到推送自动重新部署。
-name: 同步安装脚本
+#
+# 版本号为什么放这里同步：public/version.txt 是站点版本的单一来源，页面徽标
+# 与下载按钮的资产 URL 都由它生成。主仓库发版时若忘了改，站点不会报错，
+# 只会让所有人下到上一版的包——没有任何环节拦得住。改由本 job 从 Release
+# 反查，漏了也能在下一次定时运行时自愈；发版当天想立刻上线就手动跑一次。
+name: 同步安装脚本与版本号
 
 on:
   workflow_dispatch:
@@ -20,14 +26,23 @@ jobs:
         run: |
           curl -fsSL -o public/install.sh https://raw.githubusercontent.com/tenngoxars/Kuraya/main/install.sh
           curl -fsSL -o public/install.ps1 https://raw.githubusercontent.com/tenngoxars/Kuraya/main/install.ps1
+      - name: 对齐最新 Release 版本号
+        run: |
+          TAG=$(curl -fsSL https://api.github.com/repos/tenngoxars/Kuraya/releases/latest | jq -r .tag_name)
+          # 取不到就保持原样：宁可版本号旧一天，也不能把 null 写进单一来源，
+          # 那会让站点构建直接失败（vite.config.js 对空值抛错）
+          case "$TAG" in
+            v[0-9]*) printf '%s' "${TAG#v}" > public/version.txt ;;
+            *) echo "未取到有效 tag（得到 '$TAG'），版本号保持不变" ;;
+          esac
       - name: 有变化才提交
         run: |
-          if git diff --quiet public/install.sh public/install.ps1; then
-            echo "脚本无变化，跳过"
+          if git diff --quiet public/install.sh public/install.ps1 public/version.txt; then
+            echo "无变化，跳过"
           else
             git config user.name "github-actions[bot]"
             git config user.email "actions@github.com"
-            git add public/install.sh public/install.ps1
-            git commit -m "同步安装脚本"
+            git add public/install.sh public/install.ps1 public/version.txt
+            git commit -m "同步安装脚本与版本号"
             git push
           fi
